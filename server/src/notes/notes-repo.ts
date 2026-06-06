@@ -62,6 +62,11 @@ export function updateNoteBody(
   return getNote(db, id);
 }
 
+/** Delete a Note; returns true if a row was removed. */
+export function deleteNote(db: Db, id: string): boolean {
+  return db.delete(notes).where(eq(notes.id, id)).run().changes > 0;
+}
+
 /** Set a custom Title; subsequent Body edits will not overwrite it. */
 export function renameNote(
   db: Db,

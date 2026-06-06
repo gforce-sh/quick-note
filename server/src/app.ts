@@ -11,6 +11,7 @@ import {
   getNote,
   updateNoteBody,
   renameNote,
+  deleteNote,
 } from "./notes/notes-repo";
 
 export interface AppConfig {
@@ -138,6 +139,11 @@ export function createApp(deps: AppDeps) {
       return note ? c.json(note) : c.json({ error: "not found" }, 404);
     }
     return c.json({ error: "nothing to update" }, 400);
+  });
+
+  app.delete("/api/notes/:id", requireSession, (c) => {
+    const removed = deleteNote(db, c.req.param("id"));
+    return removed ? c.json({ ok: true }) : c.json({ error: "not found" }, 404);
   });
 
   return app;
