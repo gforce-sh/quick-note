@@ -27,3 +27,23 @@ export async function deleteNote(id: string): Promise<void> {
   const res = await fetch(`/api/notes/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`delete note failed: ${res.status}`);
 }
+
+async function patchNote(id: string, patch: object): Promise<Note> {
+  const res = await fetch(`/api/notes/${id}`, {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) throw new Error(`update note failed: ${res.status}`);
+  return res.json();
+}
+
+/** Update the Body (the title re-derives server-side unless custom). */
+export function updateNoteBody(id: string, body: string): Promise<Note> {
+  return patchNote(id, { body });
+}
+
+/** Set a custom Title. */
+export function renameNote(id: string, title: string): Promise<Note> {
+  return patchNote(id, { title });
+}

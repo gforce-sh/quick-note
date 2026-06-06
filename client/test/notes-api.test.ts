@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { listNotes, getNote, createNote, deleteNote } from "../src/notes-api";
+import {
+  listNotes,
+  getNote,
+  createNote,
+  deleteNote,
+  updateNoteBody,
+  renameNote,
+} from "../src/notes-api";
 
 function res(status: number, body: unknown = {}) {
   return new Response(JSON.stringify(body), {
@@ -59,6 +66,56 @@ describe("notes-api", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/notes/n1",
       expect.objectContaining({ method: "DELETE" }),
+    );
+  });
+
+  it("updates a note body via PATCH", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      res(200, {
+        id: "1",
+        title: "T",
+        body: "new body",
+        titleIsCustom: false,
+        createdAt: 0,
+        updatedAt: 2,
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const note = await updateNoteBody("1", "new body");
+
+    expect(note.body).toBe("new body");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/notes/1",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ body: "new body" }),
+      }),
+    );
+  });
+
+  it("renames a note via PATCH", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      res(200, {
+        id: "1",
+        title: "Renamed",
+        body: "",
+        titleIsCustom: true,
+        createdAt: 0,
+        updatedAt: 2,
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const note = await renameNote("1", "Renamed");
+
+    expect(note.title).toBe("Renamed");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/notes/1",
+      expect.objectContaining({
+        method: "PATCH",
+        body: JSON.stringify({ title: "Renamed" }),
+      }),
     );
   });
 });
