@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "set-passcode": "tsx src/cli/set-passcode.ts",
+    "backup": "tsx src/cli/backup.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

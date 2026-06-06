@@ -10,6 +10,7 @@ dist/
 *.db-shm
 *.db-wal
 server/data/
+server/backups/
 
 # env / secrets
 .env
