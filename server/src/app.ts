@@ -5,6 +5,7 @@ import type { Db } from "./db";
 import { getAuth, clearFailures, recordFailure } from "./auth/auth-repo";
 import { verifyPasscode } from "./auth/passcode";
 import { createSessionToken, verifySessionToken } from "./auth/token";
+import { createNote } from "./notes/notes-repo";
 
 export interface AppConfig {
   sessionSecret: string;
@@ -101,6 +102,11 @@ export function createApp(deps: AppDeps) {
       maxAge: Math.floor(config.sessionTtlMs / 1000),
     });
     return c.json({ ok: true });
+  });
+
+  app.post("/api/notes", requireSession, (c) => {
+    const note = createNote(db, { now: now() });
+    return c.json(note, 201);
   });
 
   return app;

@@ -7,3 +7,16 @@ export interface LoginRequest {
 export interface OkResponse {
   ok: true;
 }
+
+/** A markdown Note. */
+export interface Note {
+  id: string;
+  title: string;
+  body: string;
+  titleIsCustom: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** Note fields shown in the sidebar list. */
+export type NoteSummary = Pick<Note, "id" | "title" | "updatedAt">;

@@ -1,5 +1,6 @@
 import { createApp, type AppConfig } from "../../src/app";
 import { createDb } from "../../src/db";
+import { createSessionToken } from "../../src/auth/token";
 
 /**
  * Build an app wired to a fresh in-memory database and a controllable
@@ -24,5 +25,11 @@ export function buildTestApp(overrides: Partial<AppConfig> = {}) {
     setNow: (t: number) => {
       current = t;
     },
+    /** A `Cookie` header value carrying a valid session for the current clock. */
+    authCookie: () =>
+      `session=${createSessionToken(config.sessionSecret, {
+        ttlMs: config.sessionTtlMs,
+        now: current,
+      })}`,
   };
 }

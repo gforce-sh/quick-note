@@ -14,5 +14,14 @@ export function migrate(sqlite: Database.Database): void {
       locked_until INTEGER
     );
     INSERT OR IGNORE INTO auth (id, failed_attempts) VALUES (1, 0);
+
+    CREATE TABLE IF NOT EXISTS notes (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL DEFAULT '',
+      title_is_custom INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
   `);
 }
