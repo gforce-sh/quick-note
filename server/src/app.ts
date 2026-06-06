@@ -5,7 +5,13 @@ import type { Db } from "./db";
 import { getAuth, clearFailures, recordFailure } from "./auth/auth-repo";
 import { verifyPasscode } from "./auth/passcode";
 import { createSessionToken, verifySessionToken } from "./auth/token";
-import { createNote, listNotes, getNote } from "./notes/notes-repo";
+import {
+  createNote,
+  listNotes,
+  getNote,
+  updateNoteBody,
+  renameNote,
+} from "./notes/notes-repo";
 
 export interface AppConfig {
   sessionSecret: string;
@@ -115,6 +121,23 @@ export function createApp(deps: AppDeps) {
     const note = getNote(db, c.req.param("id"));
     if (!note) return c.json({ error: "not found" }, 404);
     return c.json(note);
+  });
+
+  app.patch("/api/notes/:id", requireSession, async (c) => {
+    const id = c.req.param("id");
+    const patch = await c.req
+      .json<{ body?: string; title?: string }>()
+      .catch(() => ({}) as { body?: string; title?: string });
+
+    if (typeof patch.title === "string") {
+      const note = renameNote(db, id, patch.title, { now: now() });
+      return note ? c.json(note) : c.json({ error: "not found" }, 404);
+    }
+    if (typeof patch.body === "string") {
+      const note = updateNoteBody(db, id, patch.body, { now: now() });
+      return note ? c.json(note) : c.json({ error: "not found" }, 404);
+    }
+    return c.json({ error: "nothing to update" }, 400);
   });
 
   return app;

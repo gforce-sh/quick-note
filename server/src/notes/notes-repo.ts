@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { eq, desc } from "drizzle-orm";
 import type { Db } from "../db";
 import { notes } from "../db/schema";
+import { deriveTitle } from "./title";
 import type { Note, NoteSummary } from "@notes/shared";
 
 function pad(n: number): string {
@@ -42,4 +43,37 @@ export function listNotes(db: Db): NoteSummary[] {
 /** Read a full Note by id, or null if it does not exist. */
 export function getNote(db: Db, id: string): Note | null {
   return db.select().from(notes).where(eq(notes.id, id)).get() ?? null;
+}
+
+/** Update the Body, re-deriving the Title unless it is custom. */
+export function updateNoteBody(
+  db: Db,
+  id: string,
+  body: string,
+  opts: { now: number },
+): Note | null {
+  const existing = getNote(db, id);
+  if (!existing) return null;
+  const derived = existing.titleIsCustom ? null : deriveTitle(body);
+  db.update(notes)
+    .set({ body, title: derived ?? existing.title, updatedAt: opts.now })
+    .where(eq(notes.id, id))
+    .run();
+  return getNote(db, id);
+}
+
+/** Set a custom Title; subsequent Body edits will not overwrite it. */
+export function renameNote(
+  db: Db,
+  id: string,
+  title: string,
+  opts: { now: number },
+): Note | null {
+  const existing = getNote(db, id);
+  if (!existing) return null;
+  db.update(notes)
+    .set({ title, titleIsCustom: true, updatedAt: opts.now })
+    .where(eq(notes.id, id))
+    .run();
+  return getNote(db, id);
 }
