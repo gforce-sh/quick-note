@@ -33,6 +33,16 @@ describe("createAutosave", () => {
     expect(a.status()).toBe("saved");
   });
 
+  it("flush saves the pending body immediately, skipping the debounce", () => {
+    const save = vi.fn().mockResolvedValue(undefined);
+    const a = createAutosave(save, { debounceMs: 2000, retryMs: 5000 });
+
+    a.schedule("draft");
+    a.flush();
+
+    expect(save).toHaveBeenCalledWith("draft");
+  });
+
   it("goes to error then retries and recovers", async () => {
     const save = vi
       .fn()

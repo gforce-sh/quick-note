@@ -21,7 +21,8 @@ export function NoteEditor(props: { note: Note }) {
   );
   const unsubscribe = autosave.subscribe(setStatus);
   onCleanup(() => {
-    unsubscribe();
+    unsubscribe(); // stop updating this unmounting component's signal
+    autosave.flush(); // save any pending edit before we go (e.g. note switch)
     autosave.dispose();
   });
 

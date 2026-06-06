@@ -3,6 +3,8 @@ export type SaveStatus = "idle" | "saving" | "saved" | "error";
 export interface Autosave {
   /** Queue the body to be saved after the debounce window. */
   schedule(body: string): void;
+  /** Save any pending body now, skipping the debounce (e.g. on unmount). */
+  flush(): void;
   status(): SaveStatus;
   subscribe(cb: (status: SaveStatus) => void): () => void;
   dispose(): void;
@@ -29,20 +31,20 @@ export function createAutosave(
     for (const cb of subs) cb(s);
   };
 
-  const flush = () => {
+  const run = () => {
     if (pending === null || pending === lastSaved) return;
     const body = pending;
     setStatus("saving");
     save(body)
       .then(() => {
         lastSaved = body;
-        if (pending !== lastSaved) flush();
+        if (pending !== lastSaved) run();
         else setStatus("saved");
       })
       .catch(() => {
         setStatus("error");
         clearTimeout(retryTimer);
-        retryTimer = setTimeout(flush, opts.retryMs);
+        retryTimer = setTimeout(run, opts.retryMs);
       });
   };
 
@@ -50,7 +52,11 @@ export function createAutosave(
     schedule(body: string) {
       pending = body;
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(flush, opts.debounceMs);
+      debounceTimer = setTimeout(run, opts.debounceMs);
+    },
+    flush() {
+      clearTimeout(debounceTimer);
+      run();
     },
     status: () => status,
     subscribe(cb) {
