@@ -1,9 +1,10 @@
 import { Hono } from "hono";
-import { setCookie } from "hono/cookie";
+import type { MiddlewareHandler } from "hono";
+import { setCookie, getCookie } from "hono/cookie";
 import type { Db } from "./db";
 import { getAuth, clearFailures, recordFailure } from "./auth/auth-repo";
 import { verifyPasscode } from "./auth/passcode";
-import { createSessionToken } from "./auth/token";
+import { createSessionToken, verifySessionToken } from "./auth/token";
 
 export interface AppConfig {
   sessionSecret: string;
@@ -29,7 +30,20 @@ export function createApp(deps: AppDeps) {
 
   const app = new Hono();
 
+  /** Reject requests without a valid, unexpired session cookie. */
+  const requireSession: MiddlewareHandler = async (c, next) => {
+    const token = getCookie(c, SESSION_COOKIE);
+    if (!token || !verifySessionToken(token, config.sessionSecret, { now: now() })) {
+      return c.json({ error: "unauthorized" }, 401);
+    }
+    await next();
+  };
+
   app.get("/api/health", (c) => c.json({ status: "ok" }));
+
+  app.get("/api/session", requireSession, (c) =>
+    c.json({ authenticated: true }),
+  );
 
   app.post("/api/login", async (c) => {
     const ts = now();
