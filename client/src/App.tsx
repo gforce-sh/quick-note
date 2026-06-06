@@ -1,11 +1,14 @@
 import { createSignal, onMount, Switch, Match } from "solid-js";
+import { Router, Route, useParams, useNavigate } from "@solidjs/router";
 import { LoginScreen } from "./LoginScreen";
+import { NotesApp, type NotesApi } from "./NotesApp";
 import { login as apiLogin, getSession } from "./api";
 import type { LoginResult } from "./api";
 
 export interface AppProps {
   checkSession?: () => Promise<boolean>;
   login?: (passcode: string) => Promise<LoginResult>;
+  notesApi?: NotesApi;
 }
 
 export function App(props: AppProps) {
@@ -14,10 +17,20 @@ export function App(props: AppProps) {
 
   // null = still checking the session
   const [authed, setAuthed] = createSignal<boolean | null>(null);
+  onMount(async () => setAuthed(await checkSession()));
 
-  onMount(async () => {
-    setAuthed(await checkSession());
-  });
+  // The selected note lives in the URL (/n/:id) for deep-linking.
+  const RoutedNotes = () => {
+    const params = useParams();
+    const navigate = useNavigate();
+    return (
+      <NotesApp
+        api={props.notesApi}
+        selectedId={params.id ?? null}
+        onSelect={(id) => navigate(id ? `/n/${id}` : "/")}
+      />
+    );
+  };
 
   return (
     <Switch>
@@ -25,10 +38,10 @@ export function App(props: AppProps) {
         <p>Loading…</p>
       </Match>
       <Match when={authed() === true}>
-        <main>
-          <h1>Notes</h1>
-          {/* Notes UI arrives in Slice 4 */}
-        </main>
+        <Router>
+          <Route path="/n/:id" component={RoutedNotes} />
+          <Route path="*" component={RoutedNotes} />
+        </Router>
       </Match>
       <Match when={authed() === false}>
         <LoginScreen onSubmit={login} onSuccess={() => setAuthed(true)} />
