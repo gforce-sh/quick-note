@@ -5,7 +5,7 @@ import type { Db } from "./db";
 import { getAuth, clearFailures, recordFailure } from "./auth/auth-repo";
 import { verifyPasscode } from "./auth/passcode";
 import { createSessionToken, verifySessionToken } from "./auth/token";
-import { createNote } from "./notes/notes-repo";
+import { createNote, listNotes, getNote } from "./notes/notes-repo";
 
 export interface AppConfig {
   sessionSecret: string;
@@ -107,6 +107,14 @@ export function createApp(deps: AppDeps) {
   app.post("/api/notes", requireSession, (c) => {
     const note = createNote(db, { now: now() });
     return c.json(note, 201);
+  });
+
+  app.get("/api/notes", requireSession, (c) => c.json(listNotes(db)));
+
+  app.get("/api/notes/:id", requireSession, (c) => {
+    const note = getNote(db, c.req.param("id"));
+    if (!note) return c.json({ error: "not found" }, 404);
+    return c.json(note);
   });
 
   return app;

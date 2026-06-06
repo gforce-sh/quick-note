@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
+import { eq, desc } from "drizzle-orm";
 import type { Db } from "../db";
 import { notes } from "../db/schema";
-import type { Note } from "@notes/shared";
+import type { Note, NoteSummary } from "@notes/shared";
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
@@ -27,4 +28,18 @@ export function createNote(db: Db, opts: { now: number }): Note {
   };
   db.insert(notes).values(note).run();
   return note;
+}
+
+/** List Note summaries, most-recently-updated first. */
+export function listNotes(db: Db): NoteSummary[] {
+  return db
+    .select({ id: notes.id, title: notes.title, updatedAt: notes.updatedAt })
+    .from(notes)
+    .orderBy(desc(notes.updatedAt))
+    .all();
+}
+
+/** Read a full Note by id, or null if it does not exist. */
+export function getNote(db: Db, id: string): Note | null {
+  return db.select().from(notes).where(eq(notes.id, id)).get() ?? null;
 }
