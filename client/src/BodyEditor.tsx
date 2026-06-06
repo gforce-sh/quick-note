@@ -2,12 +2,19 @@ import { onCleanup, onMount } from "solid-js";
 import { EditorState } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import {
-  syntaxHighlighting,
-  defaultHighlightStyle,
-} from "@codemirror/language";
+import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
+import { tags } from "@lezer/highlight";
 import { markdown } from "@codemirror/lang-markdown";
 import { livePreview } from "./live-preview";
+
+// Custom highlight: bold headings WITHOUT the default underline.
+const markdownHighlight = HighlightStyle.define([
+  { tag: tags.heading, fontWeight: "bold", textDecoration: "none" },
+  { tag: tags.strong, fontWeight: "bold" },
+  { tag: tags.emphasis, fontStyle: "italic" },
+  { tag: tags.monospace, fontFamily: "ui-monospace, monospace" },
+  { tag: tags.link, color: "#2563eb" },
+]);
 
 /**
  * Thin Solid wrapper around a CodeMirror 6 EditorView with inline Live
@@ -30,7 +37,7 @@ export function BodyEditor(props: {
           history(),
           keymap.of([...defaultKeymap, ...historyKeymap]),
           markdown(),
-          syntaxHighlighting(defaultHighlightStyle),
+          syntaxHighlighting(markdownHighlight),
           livePreview,
           EditorView.lineWrapping,
           EditorView.updateListener.of((u) => {
