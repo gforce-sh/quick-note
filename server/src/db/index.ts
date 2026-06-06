@@ -1,3 +1,5 @@
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";
@@ -8,6 +10,7 @@ import { migrate } from "./migrate";
  * migrations, and wrap it with Drizzle for typed queries.
  */
 export function createDb(path = ":memory:") {
+  if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
   const sqlite = new Database(path);
   if (path !== ":memory:") sqlite.pragma("journal_mode = WAL");
   migrate(sqlite);
