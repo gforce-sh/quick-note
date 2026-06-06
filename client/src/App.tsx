@@ -1,14 +1,17 @@
 import { createSignal, onMount, Switch, Match } from "solid-js";
+import type { JSX } from "solid-js";
 import { Router, Route, useParams, useNavigate } from "@solidjs/router";
 import { LoginScreen } from "./LoginScreen";
 import { NotesApp, type NotesApi } from "./NotesApp";
 import { login as apiLogin, getSession } from "./api";
 import type { LoginResult } from "./api";
+import type { Note } from "@notes/shared";
 
 export interface AppProps {
   checkSession?: () => Promise<boolean>;
   login?: (passcode: string) => Promise<LoginResult>;
   notesApi?: NotesApi;
+  renderNote?: (note: Note) => JSX.Element;
 }
 
 export function App(props: AppProps) {
@@ -26,6 +29,7 @@ export function App(props: AppProps) {
     return (
       <NotesApp
         api={props.notesApi}
+        renderNote={props.renderNote}
         selectedId={params.id ?? null}
         onSelect={(id) => navigate(id ? `/n/${id}` : "/")}
       />

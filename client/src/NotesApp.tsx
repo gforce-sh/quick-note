@@ -1,7 +1,20 @@
-import { createResource, createSignal, onMount, Show } from "solid-js";
+import {
+  createResource,
+  createSignal,
+  lazy,
+  onMount,
+  Show,
+  Suspense,
+} from "solid-js";
+import type { JSX } from "solid-js";
 import type { Note, NoteSummary } from "@notes/shared";
 import { Sidebar } from "./Sidebar";
 import { listNotes, getNote, createNote, deleteNote } from "./notes-api";
+
+// Code-split the CM6 editor so login/sidebar load without it.
+const NoteEditor = lazy(() =>
+  import("./NoteEditor").then((m) => ({ default: m.NoteEditor })),
+);
 
 export interface NotesApi {
   list: () => Promise<NoteSummary[]>;
@@ -21,10 +34,14 @@ export interface NotesAppProps {
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   api?: NotesApi;
+  /** How to render the selected note (defaults to the CM6 NoteEditor). */
+  renderNote?: (note: Note) => JSX.Element;
 }
 
 export function NotesApp(props: NotesAppProps) {
   const api = props.api ?? defaultApi;
+  const renderNote =
+    props.renderNote ?? ((note: Note) => <NoteEditor note={note} />);
 
   const [notes, setNotes] = createSignal<NoteSummary[]>([]);
   onMount(async () => setNotes(await api.list()));
@@ -61,6 +78,7 @@ export function NotesApp(props: NotesAppProps) {
       <main>
         <Show
           when={props.selectedId ? current() : undefined}
+          keyed
           fallback={
             <p>
               {notes().length === 0
@@ -70,10 +88,9 @@ export function NotesApp(props: NotesAppProps) {
           }
         >
           {(note) => (
-            <article aria-label="Note">
-              <h2>{note().title}</h2>
-              <pre>{note().body}</pre>
-            </article>
+            <Suspense fallback={<p>Loading editor…</p>}>
+              {renderNote(note)}
+            </Suspense>
           )}
         </Show>
       </main>

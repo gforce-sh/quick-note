@@ -30,7 +30,19 @@ function fakeApi(initial: Note[] = []): NotesApi {
 
 function Harness(props: { api: NotesApi }) {
   const [sel, setSel] = createSignal<string | null>(null);
-  return <NotesApp api={props.api} selectedId={sel()} onSelect={setSel} />;
+  return (
+    <NotesApp
+      api={props.api}
+      selectedId={sel()}
+      onSelect={setSel}
+      renderNote={(n) => (
+        <div>
+          <h2>{n.title}</h2>
+          <pre>{n.body}</pre>
+        </div>
+      )}
+    />
+  );
 }
 
 describe("NotesApp", () => {

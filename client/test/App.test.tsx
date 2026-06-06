@@ -79,6 +79,7 @@ describe("App auth guard", () => {
         checkSession={() => Promise.resolve(true)}
         login={vi.fn()}
         notesApi={notesApi([note("1", "Alpha", "url body")])}
+        renderNote={(n) => <pre>{n.body}</pre>}
       />
     ));
 
