@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono";
-import { setCookie, getCookie } from "hono/cookie";
+import { setCookie, getCookie, deleteCookie } from "hono/cookie";
 import type { Db } from "./db";
 import { getAuth, clearFailures, recordFailure } from "./auth/auth-repo";
 import { verifyPasscode } from "./auth/passcode";
@@ -44,6 +44,11 @@ export function createApp(deps: AppDeps) {
   app.get("/api/session", requireSession, (c) =>
     c.json({ authenticated: true }),
   );
+
+  app.post("/api/logout", (c) => {
+    deleteCookie(c, SESSION_COOKIE, { path: "/" });
+    return c.json({ ok: true });
+  });
 
   app.post("/api/login", async (c) => {
     const ts = now();
