@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { createApp } from "../src/app";
+import { buildTestApp } from "./helpers/app";
 
 describe("GET /api/health", () => {
   it("reports the service is ok", async () => {
-    const app = createApp();
+    const { app } = buildTestApp();
 
     const res = await app.request("/api/health");
 
