@@ -2,12 +2,13 @@ import { createSignal, onMount, Switch, Match } from "solid-js";
 import { Router, Route, useParams, useNavigate } from "@solidjs/router";
 import { LoginScreen } from "./LoginScreen";
 import { NotesApp, type NotesApi, type RenderNote } from "./NotesApp";
-import { login as apiLogin, getSession } from "./api";
+import { login as apiLogin, logout as apiLogout, getSession } from "./api";
 import type { LoginResult } from "./api";
 
 export interface AppProps {
   checkSession?: () => Promise<boolean>;
   login?: (passcode: string) => Promise<LoginResult>;
+  logout?: () => Promise<void>;
   notesApi?: NotesApi;
   renderNote?: RenderNote;
 }
@@ -15,10 +16,16 @@ export interface AppProps {
 export function App(props: AppProps) {
   const checkSession = props.checkSession ?? getSession;
   const login = props.login ?? apiLogin;
+  const logout = props.logout ?? apiLogout;
 
   // null = still checking the session
   const [authed, setAuthed] = createSignal<boolean | null>(null);
   onMount(async () => setAuthed(await checkSession()));
+
+  const handleLogout = async () => {
+    await logout();
+    setAuthed(false);
+  };
 
   // The selected note lives in the URL (/n/:id) for deep-linking.
   const RoutedNotes = () => {
@@ -28,6 +35,7 @@ export function App(props: AppProps) {
       <NotesApp
         api={props.notesApi}
         renderNote={props.renderNote}
+        onLogout={handleLogout}
         selectedId={params.id ?? null}
         onSelect={(id) => navigate(id ? `/n/${id}` : "/")}
       />

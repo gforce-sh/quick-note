@@ -22,3 +22,8 @@ export async function getSession(): Promise<boolean> {
   const res = await fetch("/api/session");
   return res.ok;
 }
+
+/** Clear the session cookie. */
+export async function logout(): Promise<void> {
+  await fetch("/api/logout", { method: "POST" });
+}

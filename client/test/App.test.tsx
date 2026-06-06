@@ -71,6 +71,21 @@ describe("App auth guard", () => {
     ).toBeTruthy();
   });
 
+  it("logs out and returns to the login screen", async () => {
+    render(() => (
+      <App
+        checkSession={() => Promise.resolve(true)}
+        login={vi.fn()}
+        logout={vi.fn().mockResolvedValue(undefined)}
+        notesApi={notesApi([])}
+      />
+    ));
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: /log out/i }));
+
+    expect(await screen.findAllByRole("textbox")).toHaveLength(4);
+  });
+
   it("selects the note named in the URL", async () => {
     window.history.pushState({}, "", "/n/1");
 

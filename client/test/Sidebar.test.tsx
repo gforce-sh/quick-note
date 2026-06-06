@@ -45,6 +45,15 @@ describe("Sidebar", () => {
     expect(onNew).toHaveBeenCalled();
   });
 
+  it("triggers logout", async () => {
+    const onLogout = vi.fn();
+    renderSidebar({ onLogout });
+
+    await userEvent.setup().click(screen.getByRole("button", { name: /log out/i }));
+
+    expect(onLogout).toHaveBeenCalled();
+  });
+
   it("requires two clicks to delete (arm then confirm)", async () => {
     const user = userEvent.setup();
     const { onDelete } = renderSidebar();

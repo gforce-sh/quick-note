@@ -7,6 +7,7 @@ export interface SidebarProps {
   onSelect: (id: string) => void;
   onNew: () => void;
   onDelete: (id: string) => void;
+  onLogout?: () => void;
 }
 
 export function Sidebar(props: SidebarProps) {
@@ -33,9 +34,14 @@ export function Sidebar(props: SidebarProps) {
 
   return (
     <nav class="sidebar" aria-label="Notes">
-      <button type="button" onClick={() => props.onNew()}>
-        New note
-      </button>
+      <div class="sidebar-actions">
+        <button type="button" onClick={() => props.onNew()}>
+          New note
+        </button>
+        <button type="button" onClick={() => props.onLogout?.()}>
+          Log out
+        </button>
+      </div>
       <ul>
         <For each={props.notes}>
           {(note) => (

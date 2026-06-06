@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { login } from "../src/api";
+import { login, logout } from "../src/api";
 
 function mockFetch(status: number, body: unknown = {}) {
   return vi.fn().mockResolvedValue(
@@ -29,5 +29,17 @@ describe("api.login", () => {
     vi.stubGlobal("fetch", mockFetch(429, { error: "locked" }));
 
     await expect(login("0000")).resolves.toEqual({ ok: false, reason: "locked" });
+  });
+
+  it("logout posts to /api/logout", async () => {
+    const fetchMock = mockFetch(200, { ok: true });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await logout();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/logout",
+      expect.objectContaining({ method: "POST" }),
+    );
   });
 });

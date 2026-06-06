@@ -41,6 +41,7 @@ export interface NotesAppProps {
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   api?: NotesApi;
+  onLogout?: () => void;
   /** How to render the selected note (defaults to the CM6 NoteEditor). */
   renderNote?: RenderNote;
 }
@@ -85,6 +86,7 @@ export function NotesApp(props: NotesAppProps) {
         onSelect={props.onSelect}
         onNew={handleNew}
         onDelete={handleDelete}
+        onLogout={props.onLogout}
       />
       <main>
         <Show
