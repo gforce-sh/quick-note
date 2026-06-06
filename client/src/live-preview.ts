@@ -8,8 +8,13 @@ import {
   type ViewUpdate,
 } from "@codemirror/view";
 
-/** True if the given position's line is touched by a selection (the "active" line). */
+/**
+ * True if the given position's line is touched by a selection (the "active"
+ * line). When the editor is not focused, no line is active — so markers stay
+ * concealed after you click away.
+ */
 function lineIsActive(view: EditorView, pos: number): boolean {
+  if (!view.hasFocus) return false;
   const line = view.state.doc.lineAt(pos);
   return view.state.selection.ranges.some(
     (r) => r.from <= line.to && r.to >= line.from,
@@ -76,7 +81,12 @@ export const livePreview = ViewPlugin.fromClass(
       this.decorations = buildDecorations(view);
     }
     update(u: ViewUpdate) {
-      if (u.docChanged || u.selectionSet || u.viewportChanged) {
+      if (
+        u.docChanged ||
+        u.selectionSet ||
+        u.viewportChanged ||
+        u.focusChanged
+      ) {
         this.decorations = buildDecorations(u.view);
       }
     }
