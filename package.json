@@ -9,6 +9,10 @@
     "client"
   ],
   "scripts": {
+    "dev": "concurrently -k -n server,client -c blue,green \"npm run dev -w @notes/server\" \"npm run dev -w @notes/client\"",
     "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
   }
 }
