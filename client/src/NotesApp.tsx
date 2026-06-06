@@ -30,18 +30,29 @@ const defaultApi: NotesApi = {
   remove: deleteNote,
 };
 
+export interface RenderNoteContext {
+  /** Notify the list that this note's title changed (keeps the sidebar fresh). */
+  onRenamed: (title: string) => void;
+}
+
+export type RenderNote = (note: Note, ctx: RenderNoteContext) => JSX.Element;
+
 export interface NotesAppProps {
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   api?: NotesApi;
   /** How to render the selected note (defaults to the CM6 NoteEditor). */
-  renderNote?: (note: Note) => JSX.Element;
+  renderNote?: RenderNote;
 }
 
 export function NotesApp(props: NotesAppProps) {
   const api = props.api ?? defaultApi;
-  const renderNote =
-    props.renderNote ?? ((note: Note) => <NoteEditor note={note} />);
+  const renderNote: RenderNote =
+    props.renderNote ??
+    ((note, ctx) => <NoteEditor note={note} onRenamed={ctx.onRenamed} />);
+
+  const renameInList = (id: string, title: string) =>
+    setNotes(notes().map((n) => (n.id === id ? { ...n, title } : n)));
 
   const [notes, setNotes] = createSignal<NoteSummary[]>([]);
   onMount(async () => setNotes(await api.list()));
@@ -89,7 +100,9 @@ export function NotesApp(props: NotesAppProps) {
         >
           {(note) => (
             <Suspense fallback={<p>Loading editor…</p>}>
-              {renderNote(note)}
+              {renderNote(note, {
+                onRenamed: (title) => renameInList(note.id, title),
+              })}
             </Suspense>
           )}
         </Show>

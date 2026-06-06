@@ -35,10 +35,11 @@ function Harness(props: { api: NotesApi }) {
       api={props.api}
       selectedId={sel()}
       onSelect={setSel}
-      renderNote={(n) => (
+      renderNote={(n, ctx) => (
         <div>
           <h2>{n.title}</h2>
           <pre>{n.body}</pre>
+          <button onClick={() => ctx.onRenamed("Renamed!")}>rename</button>
         </div>
       )}
     />
@@ -75,6 +76,16 @@ describe("NotesApp", () => {
     expect(
       await screen.findByRole("heading", { name: /new note/i }),
     ).toBeTruthy();
+  });
+
+  it("updates the sidebar title after a rename", async () => {
+    render(() => <Harness api={fakeApi([note("1", "Alpha")])} />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByText("Alpha"));
+
+    await user.click(screen.getByRole("button", { name: "rename" }));
+
+    expect(await screen.findByText("Renamed!")).toBeTruthy();
   });
 
   it("clears the view after deleting the selected note", async () => {

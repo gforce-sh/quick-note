@@ -11,7 +11,10 @@ import { updateNoteBody, renameNote } from "./notes-api";
  * with Live Preview, and a debounced autosave with status. Composed from
  * tested units; the CM6 glue itself is not unit-tested.
  */
-export function NoteEditor(props: { note: Note }) {
+export function NoteEditor(props: {
+  note: Note;
+  onRenamed?: (title: string) => void;
+}) {
   const [status, setStatus] = createSignal<Status>("idle");
   const [title, setTitle] = createSignal(props.note.title);
 
@@ -27,7 +30,8 @@ export function NoteEditor(props: { note: Note }) {
   });
 
   const handleRename = (next: string) => {
-    setTitle(next); // optimistic; sidebar refreshes on next load
+    setTitle(next); // optimistic
+    props.onRenamed?.(next); // keep the sidebar in sync
     void renameNote(props.note.id, next).catch(() => {});
   };
 
