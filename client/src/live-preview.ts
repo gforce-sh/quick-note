@@ -62,9 +62,16 @@ function buildDecorations(view: EditorView): DecorationSet {
 
         // Conceal the syntax markers themselves, unless editing that line.
         const isMarker =
-          name === "HeadingMark" || name === "EmphasisMark" || name === "CodeMark";
+          name === "HeaderMark" || name === "EmphasisMark" || name === "CodeMark";
         if (isMarker && node.to > node.from && !lineIsActive(view, node.from)) {
-          decos.push(Decoration.replace({}).range(node.from, node.to));
+          let to = node.to;
+          if (name === "HeaderMark") {
+            // also hide the space between the #'s and the heading text
+            const doc = view.state.doc;
+            const lineTo = doc.lineAt(node.from).to;
+            while (to < lineTo && doc.sliceString(to, to + 1) === " ") to++;
+          }
+          decos.push(Decoration.replace({}).range(node.from, to));
         }
       },
     });
