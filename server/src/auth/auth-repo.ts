@@ -26,11 +26,23 @@ export async function setPasscode(db: Db, passcode: string): Promise<void> {
   db.update(auth).set({ passcodeHash: hash }).where(eq(auth.id, 1)).run();
 }
 
-/** Record one failed Passcode attempt; returns the new count. */
-export function recordFailure(db: Db): number {
-  const next = getAuth(db).failedAttempts + 1;
-  db.update(auth).set({ failedAttempts: next }).where(eq(auth.id, 1)).run();
-  return next;
+/**
+ * Record one failed Passcode attempt. When the count reaches
+ * `maxAttempts`, a Lockout is set until `now + lockMs`. Returns the new
+ * state (so the caller can log a lockout).
+ */
+export function recordFailure(
+  db: Db,
+  opts: { now: number; maxAttempts: number; lockMs: number },
+): { failedAttempts: number; lockedUntil: number | null } {
+  const failedAttempts = getAuth(db).failedAttempts + 1;
+  const lockedUntil =
+    failedAttempts >= opts.maxAttempts ? opts.now + opts.lockMs : null;
+  db.update(auth)
+    .set({ failedAttempts, lockedUntil })
+    .where(eq(auth.id, 1))
+    .run();
+  return { failedAttempts, lockedUntil };
 }
 
 /** Reset the failed-attempt counter and clear any Lockout. */

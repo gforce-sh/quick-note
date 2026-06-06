@@ -20,6 +20,8 @@ export interface AppDeps {
 }
 
 const SESSION_COOKIE = "session";
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_MS = 60 * 60 * 1000;
 
 export function createApp(deps: AppDeps) {
   const { db, config } = deps;
@@ -30,9 +32,21 @@ export function createApp(deps: AppDeps) {
   app.get("/api/health", (c) => c.json({ status: "ok" }));
 
   app.post("/api/login", async (c) => {
+    const ts = now();
+    let auth = getAuth(db);
+
+    // Expire a lapsed Lockout, resetting the counter for a fresh start.
+    if (auth.lockedUntil !== null && auth.lockedUntil <= ts) {
+      clearFailures(db);
+      auth = getAuth(db);
+    }
+    // Reject while locked, even for the correct Passcode.
+    if (auth.lockedUntil !== null && auth.lockedUntil > ts) {
+      return c.json({ error: "locked" }, 429);
+    }
+
     const body = await c.req.json<{ passcode?: string }>().catch(() => ({}));
     const passcode = (body as { passcode?: string }).passcode;
-    const auth = getAuth(db);
 
     const ok =
       auth.passcodeHash !== null &&
@@ -40,7 +54,18 @@ export function createApp(deps: AppDeps) {
       (await verifyPasscode(auth.passcodeHash, passcode));
 
     if (!ok) {
-      recordFailure(db);
+      const result = recordFailure(db, {
+        now: ts,
+        maxAttempts: MAX_FAILED_ATTEMPTS,
+        lockMs: LOCKOUT_MS,
+      });
+      if (result.lockedUntil !== null) {
+        console.warn(
+          `[auth] login locked until ${new Date(
+            result.lockedUntil,
+          ).toISOString()} after ${result.failedAttempts} failed attempts`,
+        );
+      }
       return c.json({ error: "invalid passcode" }, 401);
     }
 
