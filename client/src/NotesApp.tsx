@@ -49,8 +49,7 @@ export interface NotesAppProps {
 export function NotesApp(props: NotesAppProps) {
   const api = props.api ?? defaultApi;
   const renderNote: RenderNote =
-    props.renderNote ??
-    ((note, ctx) => <NoteEditor note={note} onRenamed={ctx.onRenamed} />);
+    props.renderNote ?? ((note) => <NoteEditor note={note} />);
 
   const renameInList = (id: string, title: string) =>
     setNotes(notes().map((n) => (n.id === id ? { ...n, title } : n)));

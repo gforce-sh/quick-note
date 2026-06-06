@@ -1,22 +1,17 @@
 import { createSignal, onCleanup } from "solid-js";
 import type { Note } from "@notes/shared";
-import { NoteTitle } from "./NoteTitle";
 import { SaveStatus } from "./SaveStatus";
 import { BodyEditor } from "./BodyEditor";
 import { createAutosave, type SaveStatus as Status } from "./autosave";
-import { updateNoteBody, renameNote } from "./notes-api";
+import { updateNoteBody } from "./notes-api";
 
 /**
- * Editing surface for one Note: a renameable title, the CodeMirror body
- * with Live Preview, and a debounced autosave with status. Composed from
- * tested units; the CM6 glue itself is not unit-tested.
+ * Editing surface for one Note: the CodeMirror body with Live Preview and
+ * a debounced autosave with status. The title is not shown above the note
+ * — the body's first heading serves as the title (and it's in the sidebar).
  */
-export function NoteEditor(props: {
-  note: Note;
-  onRenamed?: (title: string) => void;
-}) {
+export function NoteEditor(props: { note: Note }) {
   const [status, setStatus] = createSignal<Status>("idle");
-  const [title, setTitle] = createSignal(props.note.title);
 
   const autosave = createAutosave(
     (body) => updateNoteBody(props.note.id, body).then(() => {}),
@@ -24,23 +19,14 @@ export function NoteEditor(props: {
   );
   const unsubscribe = autosave.subscribe(setStatus);
   onCleanup(() => {
-    unsubscribe(); // stop updating this unmounting component's signal
+    unsubscribe();
     autosave.flush(); // save any pending edit before we go (e.g. note switch)
     autosave.dispose();
   });
 
-  const handleRename = (next: string) => {
-    setTitle(next); // optimistic
-    props.onRenamed?.(next); // keep the sidebar in sync
-    void renameNote(props.note.id, next).catch(() => {});
-  };
-
   return (
     <article aria-label="Note" class="note-editor">
-      <header>
-        <NoteTitle title={title()} onRename={handleRename} />
-        <SaveStatus status={status()} />
-      </header>
+      <SaveStatus status={status()} />
       <BodyEditor
         doc={props.note.body}
         onChange={(body) => autosave.schedule(body)}
