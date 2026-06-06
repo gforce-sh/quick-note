@@ -1,0 +1,94 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1a1a1a;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  border-right: 1px solid #e2e2e2;
+  padding: 8px;
+  overflow: auto;
+}
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+.sidebar li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.sidebar li button[aria-current="true"] {
+  font-weight: 700;
+}
+
+main {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 12px;
+}
+.login form {
+  display: flex;
+  gap: 8px;
+}
+.login input {
+  width: 48px;
+  height: 56px;
+  font-size: 24px;
+  text-align: center;
+}
+
+.note-editor header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.note-title {
+  cursor: text;
+}
+
+.cm-md-strong {
+  font-weight: 700;
+}
+.cm-md-emphasis {
+  font-style: italic;
+}
+.cm-md-code {
+  font-family: ui-monospace, monospace;
+  background: #f0f0f0;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+.cm-md-heading {
+  font-weight: 700;
+  line-height: 1.3;
+}
+.cm-md-h1 {
+  font-size: 1.8em;
+}
+.cm-md-h2 {
+  font-size: 1.5em;
+}
+.cm-md-h3 {
+  font-size: 1.25em;
+}
