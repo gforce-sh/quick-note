@@ -25,6 +25,10 @@ function fakeApi(initial: Note[] = []): NotesApi {
     remove: vi.fn(async (id: string) => {
       notes = notes.filter((n) => n.id !== id);
     }),
+    rename: vi.fn(async (id: string, title: string) => {
+      notes = notes.map((n) => (n.id === id ? { ...n, title } : n));
+      return notes.find((n) => n.id === id)!;
+    }),
   };
 }
 
@@ -35,11 +39,10 @@ function Harness(props: { api: NotesApi }) {
       api={props.api}
       selectedId={sel()}
       onSelect={setSel}
-      renderNote={(n, ctx) => (
+      renderNote={(n) => (
         <div>
           <h2>{n.title}</h2>
           <pre>{n.body}</pre>
-          <button onClick={() => ctx.onRenamed("Renamed!")}>rename</button>
         </div>
       )}
     />
@@ -78,14 +81,18 @@ describe("NotesApp", () => {
     ).toBeTruthy();
   });
 
-  it("updates the sidebar title after a rename", async () => {
-    render(() => <Harness api={fakeApi([note("1", "Alpha")])} />);
+  it("renames a note from the sidebar", async () => {
+    const api = fakeApi([note("1", "Alpha")]);
+    render(() => <Harness api={api} />);
     const user = userEvent.setup();
-    await user.click(await screen.findByText("Alpha"));
 
-    await user.click(screen.getByRole("button", { name: "rename" }));
+    await user.dblClick(await screen.findByText("Alpha"));
+    const input = screen.getByRole("textbox");
+    await user.clear(input);
+    await user.type(input, "Renamed!{Enter}");
 
     expect(await screen.findByText("Renamed!")).toBeTruthy();
+    expect(api.rename).toHaveBeenCalledWith("1", "Renamed!");
   });
 
   it("clears the view after deleting the selected note", async () => {

@@ -9,7 +9,13 @@ import {
 import type { JSX } from "solid-js";
 import type { Note, NoteSummary } from "@notes/shared";
 import { Sidebar } from "./Sidebar";
-import { listNotes, getNote, createNote, deleteNote } from "./notes-api";
+import {
+  listNotes,
+  getNote,
+  createNote,
+  deleteNote,
+  renameNote,
+} from "./notes-api";
 
 // Code-split the CM6 editor so login/sidebar load without it.
 const NoteEditor = lazy(() =>
@@ -21,6 +27,7 @@ export interface NotesApi {
   get: (id: string) => Promise<Note | null>;
   create: () => Promise<Note>;
   remove: (id: string) => Promise<void>;
+  rename: (id: string, title: string) => Promise<Note>;
 }
 
 const defaultApi: NotesApi = {
@@ -28,14 +35,10 @@ const defaultApi: NotesApi = {
   get: getNote,
   create: createNote,
   remove: deleteNote,
+  rename: renameNote,
 };
 
-export interface RenderNoteContext {
-  /** Notify the list that this note's title changed (keeps the sidebar fresh). */
-  onRenamed: (title: string) => void;
-}
-
-export type RenderNote = (note: Note, ctx: RenderNoteContext) => JSX.Element;
+export type RenderNote = (note: Note) => JSX.Element;
 
 export interface NotesAppProps {
   selectedId: string | null;
@@ -53,6 +56,11 @@ export function NotesApp(props: NotesAppProps) {
 
   const renameInList = (id: string, title: string) =>
     setNotes(notes().map((n) => (n.id === id ? { ...n, title } : n)));
+
+  const handleRename = (id: string, title: string) => {
+    renameInList(id, title); // optimistic
+    void api.rename(id, title).catch(() => {});
+  };
 
   const [notes, setNotes] = createSignal<NoteSummary[]>([]);
   onMount(async () => setNotes(await api.list()));
@@ -85,6 +93,7 @@ export function NotesApp(props: NotesAppProps) {
         onSelect={props.onSelect}
         onNew={handleNew}
         onDelete={handleDelete}
+        onRename={handleRename}
         onLogout={props.onLogout}
       />
       <main>
@@ -101,9 +110,7 @@ export function NotesApp(props: NotesAppProps) {
         >
           {(note) => (
             <Suspense fallback={<p>Loading editor…</p>}>
-              {renderNote(note, {
-                onRenamed: (title) => renameInList(note.id, title),
-              })}
+              {renderNote(note)}
             </Suspense>
           )}
         </Show>

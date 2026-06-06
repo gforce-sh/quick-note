@@ -23,6 +23,10 @@ function notesApi(initial: Note[] = []): NotesApi {
     remove: async (id) => {
       notes = notes.filter((n) => n.id !== id);
     },
+    rename: async (id, title) => {
+      notes = notes.map((n) => (n.id === id ? { ...n, title } : n));
+      return notes.find((n) => n.id === id)!;
+    },
   };
 }
 
