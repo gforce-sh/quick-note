@@ -101,7 +101,7 @@ Session middleware verifies the signed cookie on protected routes; invalid/missi
 ## 7. Auth design (detail)
 
 - **Passcode at rest:** argon2id hash in `auth.passcode_hash`. Seeded via the `set-passcode` CLI.
-- **Login:** if `locked_until > now` → reject (locked). Else verify Passcode. On success: reset `failed_attempts`/`locked_until`, issue a signed token, `Set-Cookie` (httpOnly, SameSite=Lax, Secure-in-prod, **7-day expiry, sliding**). On failure: increment `failed_attempts`; at 5 → set `locked_until = now + 1h`, **log the lockout**.
+- **Login:** if `locked_until > now` → reject (locked). Else verify Passcode. On success: reset `failed_attempts`/`locked_until`, issue a signed token, `Set-Cookie` (httpOnly, SameSite=Lax, Secure-in-prod, **7-day fixed expiry** — re-login after 7 days, no sliding renewal). On failure: increment `failed_attempts`; at 5 → set `locked_until = now + 1h`, **log the lockout**.
 - **Token:** small HMAC-SHA256-signed value (`payload.signature`), payload = issue/expiry timestamps. Verified by signature + expiry only — **no per-request DB lookup**.
 - **Logout:** `Set-Cookie` with `Max-Age=0` and identical attributes.
 
@@ -139,7 +139,7 @@ Each slice is red-green-refactor and ends in something runnable.
 - **Slice 3 — Notes CRUD (server).** `notes` table (incl. `title_is_custom`) + migration; repository; auth-guarded CRUD endpoints; title-derivation pure function; `PATCH` respects the custom-title flag; rename path.
 - **Slice 4 — Notes UI.** Sidebar (list/select/new-note/**two-step delete**); fetch-on-load; in-memory store; empty states.
 - **Slice 5 — Editor + autosave.** CM6 wrapper + Live Preview decorations (spike first); Body signal; debounce util; autosave `PATCH` + status state machine incl. `couldn't save — retrying`.
-- **Slice 6 — Polish.** Default title `New note <timestamp>`, rename affordance, sorting, 7-day sliding session, full local run-through.
+- **Slice 6 — Polish.** Default title `New note <timestamp>`, rename affordance, sorting, flush-autosave-on-switch, sidebar refresh on rename, full local run-through.
 
 ## 12. Deferred — deployment (later)
 
@@ -153,4 +153,4 @@ When you choose to deploy: single Lightsail instance · nginx serves the built S
 2. **New note** is titled **`New note <timestamp>`** (not "Untitled") and focuses the editor.
 3. **Delete** uses a **two-step inline CTA** (arm → confirm), cancel by clicking elsewhere. **No dialogs anywhere in the app.**
 4. **Selected note in the URL** (`/n/:id`) for deep-linking/refresh.
-5. **Session:** 7 days, sliding.
+5. **Session:** 7 days, fixed (re-login after 7 days; no sliding renewal).
