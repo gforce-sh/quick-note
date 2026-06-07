@@ -87,6 +87,21 @@ main {
   width: 100%;
 }
 
+.md-table {
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+.md-table th,
+.md-table td {
+  border: 1px solid #d0cfc8;
+  padding: 4px 10px;
+  text-align: left;
+}
+.md-table th {
+  background: #f0efe9;
+  font-weight: 700;
+}
+
 .cm-md-strong {
   font-weight: 700;
 }

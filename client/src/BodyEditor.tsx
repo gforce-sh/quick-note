@@ -5,7 +5,8 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
 import { markdown } from "@codemirror/lang-markdown";
-import { livePreview } from "./live-preview";
+import { GFM } from "@lezer/markdown";
+import { livePreview, tablePreview } from "./live-preview";
 
 // Custom highlight: bold headings WITHOUT the default underline.
 const markdownHighlight = HighlightStyle.define([
@@ -36,9 +37,10 @@ export function BodyEditor(props: {
         extensions: [
           history(),
           keymap.of([...defaultKeymap, ...historyKeymap]),
-          markdown(),
+          markdown({ extensions: GFM }),
           syntaxHighlighting(markdownHighlight),
           livePreview,
+          tablePreview,
           EditorView.lineWrapping,
           EditorView.updateListener.of((u) => {
             if (u.docChanged) props.onChange(u.state.doc.toString());
