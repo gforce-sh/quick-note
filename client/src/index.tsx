@@ -1,4 +1,5 @@
 import { render } from "solid-js/web";
+import "md-live-editor/styles.css";
 import "./styles.css";
 import { App } from "./App";
 

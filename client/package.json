@@ -12,13 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@codemirror/commands": "^6.10.3",
-    "@codemirror/lang-markdown": "^6.5.0",
-    "@codemirror/language": "^6.12.3",
-    "@codemirror/state": "^6.6.0",
-    "@codemirror/view": "^6.43.0",
-    "@lezer/highlight": "^1.2.3",
-    "@lezer/markdown": "^1.6.4",
+    "md-live-editor": "file:../../md-live-editor",
     "@solidjs/router": "^0.16.1",
     "solid-js": "^1.9.3"
   },
