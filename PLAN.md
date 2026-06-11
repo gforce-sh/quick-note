@@ -12,7 +12,7 @@ See [CONTEXT.md](./CONTEXT.md) for the domain glossary (Note, Title, Body, Live 
 |---|---|
 | Architecture | Client SPA + server API. **Server (SQLite) is the source of truth.** |
 | Frontend | **SolidJS SPA** via Vite. Client-rendered (no SSR). |
-| Editor | **CodeMirror 6**, inline **Live Preview** (rendered doc; active line reveals raw markdown). |
+| Editor | The external **`md-live-editor`** package (`md-live-editor/solid`) — CodeMirror 6 inline **Live Preview** + headless autosave. `NoteEditor` passes `initialContent` and `onSave`. |
 | Backend | **Hono** API on **Node**, a **separate process** from the static-file serving. |
 | Database | **SQLite** (`better-sqlite3`) + **Drizzle ORM** for typed queries + migrations. |
 | Language | **TypeScript** end-to-end, shared types between client/server. |
@@ -109,7 +109,7 @@ Session middleware verifies the signed cookie on protected routes; invalid/missi
 
 - **Routing (Solid Router):** `/login`, `/` (app shell). Selected note reflected in the URL (`/n/:id`) for deep-linking/refresh.
 - **State:** in-memory Solid store — notes list, selected note id, current Body, save status. Optimistic updates.
-- **Components:** `LoginScreen` (full-screen 4 inputs), `AppShell` (sidebar + editor pane), `Sidebar` (list, **new note**, **two-step delete**), `NoteTitle` (renameable), `Editor` (CM6 wrapper), `SaveStatus`.
+- **Components:** `LoginScreen` (full-screen 4 inputs), `AppShell` (sidebar + editor pane), `Sidebar` (list, **new note**, **two-step delete**), `NoteTitle` (renameable), `NoteEditor` (wraps `md-live-editor/solid`).
 - **New note:** creates an empty note titled **`New note <timestamp>`** and focuses the editor.
 - **Rename:** clicking the `NoteTitle` makes it editable; saving sets a **custom** title (`title_is_custom = 1`) so Body edits stop overwriting it.
 - **Two-step delete (no dialog):** first click on the delete CTA **arms** it — it changes colour and wording (e.g. "Delete" → "Confirm?"); a second click deletes; **clicking anywhere else cancels** (disarms). A pure state machine (`idle → armed → deleted | idle`), so it's unit-testable.
@@ -118,9 +118,9 @@ Session middleware verifies the signed cookie on protected routes; invalid/missi
 
 ## 9. Editor / Live Preview
 
-- A **thin Solid wrapper** mounts a CM6 `EditorView`. Solid owns the shell; CM6 owns the editing surface.
-- Live Preview via `@codemirror/lang-markdown` + custom decorations (a `ViewPlugin` that renders non-active blocks and reveals raw syntax on the active line). **This is the highest-risk slice** — we spike it first to de-risk.
-- **We do not test CM6 itself** (trust the library). All testable logic (debounce, title derivation, save state machine) is extracted out of the editor into pure units.
+- The editor is the external **`md-live-editor`** package, consumed via `md-live-editor/solid`. `NoteEditor` is a thin wrapper that passes the Note's Body as `initialContent` and persists edits through `onSave` (→ `PATCH /notes/:id`).
+- The package owns the CodeMirror 6 Live Preview surface and the debounced autosave, and is **headless** about status (emits `onSaveStatus`). See the package's own `CONTEXT.md` / `docs/adr/` for its design.
+- **We do not test CM6 itself.** `NoteEditor`'s wiring is thin and verified manually; the package carries its own unit tests.
 
 ## 10. Testing strategy (TDD)
 
@@ -138,7 +138,7 @@ Each slice is red-green-refactor and ends in something runnable.
 - **Slice 2 — Login UI.** `LoginScreen` (4 inputs, submit, error + lockout messages); wire to `/login`; auth guard + redirect.
 - **Slice 3 — Notes CRUD (server).** `notes` table (incl. `title_is_custom`) + migration; repository; auth-guarded CRUD endpoints; title-derivation pure function; `PATCH` respects the custom-title flag; rename path.
 - **Slice 4 — Notes UI.** Sidebar (list/select/new-note/**two-step delete**); fetch-on-load; in-memory store; empty states.
-- **Slice 5 — Editor + autosave.** CM6 wrapper + Live Preview decorations (spike first); Body signal; debounce util; autosave `PATCH` + status state machine incl. `couldn't save — retrying`.
+- **Slice 5 — Editor + autosave.** Built in-app originally; the editor has since been **extracted into the `md-live-editor` package** and is now consumed via `md-live-editor/solid` (`NoteEditor` passes `initialContent` / `onSave`).
 - **Slice 6 — Polish.** Default title `New note <timestamp>`, rename affordance, sorting, flush-autosave-on-switch, sidebar refresh on rename, full local run-through.
 
 ## 12. Deferred — deployment (later)

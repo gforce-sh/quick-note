@@ -17,7 +17,7 @@ The markdown source text of a Note — what the user types and edits.
 _Avoid_: Content, Text, Markdown (when referring to the editable source)
 
 **Live Preview**:
-The editing experience where the Body is displayed as rendered markdown in a single pane, except on the line or block the cursor is on, which reveals its raw markdown source. There is no separate "preview" view — editing and reading happen in the same place.
+The editing experience — rendered markdown in a single pane, except on the cursor's line/block, which reveals its raw source. Delivered by the external **`md-live-editor`** package, which owns the canonical definition; the app feeds a Note's Body to the editor as its "Content".
 _Avoid_: Split preview, Side-by-side, WYSIWYG, Render pane
 
 **Passcode**:
