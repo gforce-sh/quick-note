@@ -1,12 +1,12 @@
-import { MarkdownEditor } from "md-live-editor";
+import { MarkdownEditor } from "md-live-editor/solid";
 import type { Note } from "@notes/shared";
 import { updateNoteBody } from "./notes-api";
 
 export function NoteEditor(props: { note: Note }) {
   return (
     <MarkdownEditor
-      doc={props.note.body}
-      onSave={(body) => updateNoteBody(props.note.id, body).then(() => {})}
+      initialContent={props.note.body}
+      onSave={(content) => updateNoteBody(props.note.id, content).then(() => {})}
     />
   );
 }
