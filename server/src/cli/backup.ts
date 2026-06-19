@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import Database from "better-sqlite3";
