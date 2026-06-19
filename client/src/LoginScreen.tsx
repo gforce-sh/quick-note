@@ -1,45 +1,46 @@
-import { useState, useRef } from "react";
-import type { LoginResult } from "./api";
+import { useState, useRef } from 'react';
+import type { LoginResult } from './api';
 
 export interface LoginScreenProps {
   onSubmit: (passcode: string) => Promise<LoginResult>;
-  onSuccess: () => void;
 }
 
 const SLOTS = [0, 1, 2, 3];
 
-export function LoginScreen({ onSubmit, onSuccess }: LoginScreenProps) {
-  const [digits, setDigits] = useState(["", "", "", ""]);
+export const LoginScreen = ({ onSubmit }: LoginScreenProps) => {
+  const [digits, setDigits] = useState(['', '', '', '']);
   const [error, setError] = useState<string | null>(null);
-  const inputsRef = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
+  const inputsRef = useRef<(HTMLInputElement | null)[]>([
+    null,
+    null,
+    null,
+    null,
+  ]);
 
   const reset = () => {
-    setDigits(["", "", "", ""]);
+    setDigits(['', '', '', '']);
     inputsRef.current[0]?.focus();
   };
 
   const submit = async (passcode: string) => {
     setError(null);
     const result = await onSubmit(passcode);
-    if (result.ok) {
-      onSuccess();
-      return;
-    }
+    if (result.ok) return;
     setError(
-      result.reason === "locked"
-        ? "Too many attempts. Try again later."
-        : "Incorrect passcode.",
+      result.reason === 'locked'
+        ? 'Too many attempts. Try again later.'
+        : 'Incorrect passcode.',
     );
     reset();
   };
 
   const handleChange = (i: number, raw: string) => {
-    const digit = raw.replace(/\D/g, "").slice(-1);
+    const digit = raw.replace(/\D/g, '').slice(-1);
     const next = [...digits];
     next[i] = digit;
     setDigits(next);
     if (digit && i < 3) inputsRef.current[i + 1]?.focus();
-    if (next.every((d) => d !== "")) void submit(next.join(""));
+    if (next.every((d) => d !== '')) void submit(next.join(''));
   };
 
   return (
@@ -56,7 +57,7 @@ export function LoginScreen({ onSubmit, onSuccess }: LoginScreenProps) {
             maxLength={1}
             autoComplete="off"
             aria-label={`Passcode digit ${i + 1}`}
-            value={digits[i] ?? ""}
+            value={digits[i] ?? ''}
             onChange={(e) => handleChange(i, e.currentTarget.value)}
           />
         ))}
@@ -64,4 +65,4 @@ export function LoginScreen({ onSubmit, onSuccess }: LoginScreenProps) {
       {error && <p role="alert">{error}</p>}
     </main>
   );
-}
+};

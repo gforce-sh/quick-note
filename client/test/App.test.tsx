@@ -2,14 +2,22 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../src/App";
-import type { NotesApi } from "../src/NotesApp";
+import { useAuth } from "../src/useAuth";
+import { useNotesApi } from "../src/useNotesApi";
+import type { NotesApi } from "../src/useNotesApi";
 import type { Note } from "@notes/shared";
+
+vi.mock("../src/useAuth");
+vi.mock("../src/useNotesApi");
+vi.mock("../src/NoteEditor", () => ({
+  NoteEditor: ({ note }: { note: Note }) => <pre>{note.body}</pre>,
+}));
 
 function note(id: string, title: string, body = ""): Note {
   return { id, title, body, titleIsCustom: false, createdAt: 0, updatedAt: 1 };
 }
 
-function notesApi(initial: Note[] = []): NotesApi {
+function buildNotesApi(initial: Note[] = []): NotesApi {
   let notes = [...initial];
   return {
     list: async () =>
@@ -34,19 +42,25 @@ afterEach(() => window.history.pushState({}, "", "/"));
 
 describe("App auth guard", () => {
   it("shows the login screen when there is no session", async () => {
-    render(<App checkSession={() => Promise.resolve(false)} login={vi.fn()} />);
+    vi.mocked(useAuth).mockReturnValue({
+      checkSession: () => Promise.resolve(false),
+      login: vi.fn(),
+      logout: vi.fn(),
+    });
+    vi.mocked(useNotesApi).mockReturnValue(buildNotesApi());
+    render(<App />);
 
     expect(await screen.findAllByRole("textbox")).toHaveLength(4);
   });
 
   it("shows the notes app when a session exists", async () => {
-    render(
-      <App
-        checkSession={() => Promise.resolve(true)}
-        login={vi.fn()}
-        notesApi={notesApi([])}
-      />,
-    );
+    vi.mocked(useAuth).mockReturnValue({
+      checkSession: () => Promise.resolve(true),
+      login: vi.fn(),
+      logout: vi.fn(),
+    });
+    vi.mocked(useNotesApi).mockReturnValue(buildNotesApi());
+    render(<App />);
 
     expect(
       await screen.findByRole("button", { name: "New note" }),
@@ -55,13 +69,13 @@ describe("App auth guard", () => {
   });
 
   it("enters the notes app after a successful login", async () => {
-    render(
-      <App
-        checkSession={() => Promise.resolve(false)}
-        login={vi.fn().mockResolvedValue({ ok: true })}
-        notesApi={notesApi([])}
-      />,
-    );
+    vi.mocked(useAuth).mockReturnValue({
+      checkSession: () => Promise.resolve(false),
+      login: vi.fn().mockResolvedValue({ ok: true }),
+      logout: vi.fn(),
+    });
+    vi.mocked(useNotesApi).mockReturnValue(buildNotesApi());
+    render(<App />);
     await screen.findAllByRole("textbox");
 
     const user = userEvent.setup();
@@ -74,14 +88,13 @@ describe("App auth guard", () => {
   });
 
   it("logs out and returns to the login screen", async () => {
-    render(
-      <App
-        checkSession={() => Promise.resolve(true)}
-        login={vi.fn()}
-        logout={vi.fn().mockResolvedValue(undefined)}
-        notesApi={notesApi([])}
-      />,
-    );
+    vi.mocked(useAuth).mockReturnValue({
+      checkSession: () => Promise.resolve(true),
+      login: vi.fn(),
+      logout: vi.fn().mockResolvedValue(undefined),
+    });
+    vi.mocked(useNotesApi).mockReturnValue(buildNotesApi());
+    render(<App />);
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: /log out/i }));
 
@@ -90,15 +103,15 @@ describe("App auth guard", () => {
 
   it("selects the note named in the URL", async () => {
     window.history.pushState({}, "", "/n/1");
-
-    render(
-      <App
-        checkSession={() => Promise.resolve(true)}
-        login={vi.fn()}
-        notesApi={notesApi([note("1", "Alpha", "url body")])}
-        renderNote={(n) => <pre>{n.body}</pre>}
-      />,
+    vi.mocked(useAuth).mockReturnValue({
+      checkSession: () => Promise.resolve(true),
+      login: vi.fn(),
+      logout: vi.fn(),
+    });
+    vi.mocked(useNotesApi).mockReturnValue(
+      buildNotesApi([note("1", "Alpha", "url body")]),
     );
+    render(<App />);
 
     expect(await screen.findByText("url body")).toBeTruthy();
   });

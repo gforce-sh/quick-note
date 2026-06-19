@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { MarkdownEditor, type SaveStatus } from "md-live-editor/react";
-import type { Note } from "@notes/shared";
-import { updateNoteBody } from "./notes-api";
+import { useState } from 'react';
+import { MarkdownEditor, type SaveStatus } from 'md-live-editor/react';
+import type { Note } from '@notes/shared';
+import { updateNoteBody } from './notes-api';
 
 const STATUS_LABEL: Record<SaveStatus, string> = {
-  idle: "",
-  saving: "Saving…",
-  saved: "Saved",
+  idle: '',
+  saving: 'Saving…',
+  saved: 'Saved',
   error: "Couldn't save — retrying",
 };
 
-export function NoteEditor({ note }: { note: Note }) {
-  const [status, setStatus] = useState<SaveStatus>("idle");
+export const NoteEditor = ({ note }: { note: Note }) => {
+  const [status, setStatus] = useState<SaveStatus>('idle');
 
   return (
     <div className="note-editor">
@@ -22,7 +22,8 @@ export function NoteEditor({ note }: { note: Note }) {
         initialContent={note.body}
         onSave={(content) => updateNoteBody(note.id, content).then(() => {})}
         onSaveStatus={setStatus}
+        theme="system"
       />
     </div>
   );
-}
+};
