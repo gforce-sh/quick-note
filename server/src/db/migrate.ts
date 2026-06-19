@@ -29,9 +29,21 @@ export function migrate(sqlite: DatabaseSync): void {
 
   if (notesExists && !notesCols.some((c) => c.name === "user_id")) {
     // Existing notes assigned to user id=1 (the migrated default user).
-    sqlite.exec(
-      "ALTER TABLE notes ADD COLUMN user_id INTEGER NOT NULL DEFAULT 1 REFERENCES auth(id)",
-    );
+    // SQLite forbids ALTER TABLE ADD COLUMN with both REFERENCES and a non-NULL default,
+    // so rebuild the table instead.
+    sqlite.exec(`
+      CREATE TABLE notes_new (
+        id TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES auth(id),
+        title TEXT NOT NULL,
+        body TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+      INSERT INTO notes_new SELECT id, 1, title, body, created_at, updated_at FROM notes;
+      DROP TABLE notes;
+      ALTER TABLE notes_new RENAME TO notes;
+    `);
   }
 
   sqlite.exec(`
