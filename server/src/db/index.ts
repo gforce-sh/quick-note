@@ -8,6 +8,7 @@ import { migrate } from "./migrate";
 export function createDb(path = ":memory:") {
   if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
   const sqlite = new DatabaseSync(path);
+  sqlite.exec("PRAGMA foreign_keys = ON");
   if (path !== ":memory:") {
     sqlite.exec("PRAGMA journal_mode = WAL");
     sqlite.exec("PRAGMA synchronous = NORMAL");

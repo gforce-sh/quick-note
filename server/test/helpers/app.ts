@@ -1,13 +1,14 @@
 import { createApp, type AppConfig } from "../../src/app";
 import { createDb } from "../../src/db";
+import { auth } from "../../src/db/schema";
 import { createSessionToken } from "../../src/auth/token";
 
-/**
- * Build an app wired to a fresh in-memory database and a controllable
- * clock, for integration tests via Hono's `app.request()`.
- */
+const TEST_USER_ID = 1;
+
 export function buildTestApp(overrides: Partial<AppConfig> = {}) {
   const db = createDb(":memory:");
+  db.insert(auth).values({ id: TEST_USER_ID, name: "test" }).run();
+
   const config: AppConfig = {
     sessionSecret: "test-secret",
     sessionTtlMs: 7 * 24 * 60 * 60 * 1000,
@@ -30,6 +31,7 @@ export function buildTestApp(overrides: Partial<AppConfig> = {}) {
       `session=${createSessionToken(config.sessionSecret, {
         ttlMs: config.sessionTtlMs,
         now: current,
+        userId: TEST_USER_ID,
       })}`,
   };
 }

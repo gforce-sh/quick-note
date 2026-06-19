@@ -5,31 +5,24 @@ export interface SessionPayload {
   iat: number;
   /** expiry, epoch ms */
   exp: number;
+  /** auth user id */
+  userId: number;
 }
 
 function signBody(body: string, secret: string): string {
   return createHmac("sha256", secret).update(body).digest("base64url");
 }
 
-/**
- * Create a stateless, HMAC-signed session token of the form
- * `base64url(payload).base64url(signature)`. Not a JWT — a plain signed
- * cookie value for a single-origin app.
- */
 export function createSessionToken(
   secret: string,
-  opts: { ttlMs: number; now?: number },
+  opts: { ttlMs: number; now?: number; userId: number },
 ): string {
   const now = opts.now ?? Date.now();
-  const payload: SessionPayload = { iat: now, exp: now + opts.ttlMs };
+  const payload: SessionPayload = { iat: now, exp: now + opts.ttlMs, userId: opts.userId };
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
   return `${body}.${signBody(body, secret)}`;
 }
 
-/**
- * Verify a session token by signature and expiry only (no DB lookup).
- * Returns the payload when valid and unexpired, otherwise `null`.
- */
 export function verifySessionToken(
   token: string,
   secret: string,
@@ -57,6 +50,7 @@ export function verifySessionToken(
     return null;
   }
   if (typeof payload.exp !== "number" || payload.exp <= now) return null;
+  if (typeof payload.userId !== "number") return null;
 
   return payload;
 }

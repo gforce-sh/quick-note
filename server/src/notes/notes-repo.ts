@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq, desc } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import type { Db } from "../db";
 import { notes } from "../db/schema";
 import { deriveTitle } from "./title";
@@ -9,7 +9,6 @@ function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-/** Placeholder title for a brand-new Note, e.g. "New note 2026-06-06 14:32" (UTC). */
 function defaultTitle(now: number): string {
   const d = new Date(now);
   return `New note ${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(
@@ -17,8 +16,16 @@ function defaultTitle(now: number): string {
   )} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 }
 
-/** Create an empty Note with a default title. */
-export function createNote(db: Db, opts: { now: number }): Note {
+const noteFields = {
+  id: notes.id,
+  title: notes.title,
+  body: notes.body,
+  titleIsCustom: notes.titleIsCustom,
+  createdAt: notes.createdAt,
+  updatedAt: notes.updatedAt,
+};
+
+export function createNote(db: Db, opts: { now: number; userId: number }): Note {
   const note: Note = {
     id: randomUUID(),
     title: defaultTitle(opts.now),
@@ -27,58 +34,67 @@ export function createNote(db: Db, opts: { now: number }): Note {
     createdAt: opts.now,
     updatedAt: opts.now,
   };
-  db.insert(notes).values(note).run();
+  db.insert(notes).values({ ...note, userId: opts.userId }).run();
   return note;
 }
 
-/** List Note summaries, most-recently-updated first. */
-export function listNotes(db: Db): NoteSummary[] {
+export function listNotes(db: Db, userId: number): NoteSummary[] {
   return db
     .select({ id: notes.id, title: notes.title, updatedAt: notes.updatedAt })
     .from(notes)
+    .where(eq(notes.userId, userId))
     .orderBy(desc(notes.updatedAt))
     .all();
 }
 
-/** Read a full Note by id, or null if it does not exist. */
-export function getNote(db: Db, id: string): Note | null {
-  return db.select().from(notes).where(eq(notes.id, id)).get() ?? null;
+export function getNote(db: Db, userId: number, id: string): Note | null {
+  return (
+    db
+      .select(noteFields)
+      .from(notes)
+      .where(and(eq(notes.id, id), eq(notes.userId, userId)))
+      .get() ?? null
+  );
 }
 
-/** Update the Body, re-deriving the Title unless it is custom. */
 export function updateNoteBody(
   db: Db,
+  userId: number,
   id: string,
   body: string,
   opts: { now: number },
 ): Note | null {
-  const existing = getNote(db, id);
+  const existing = getNote(db, userId, id);
   if (!existing) return null;
   const derived = existing.titleIsCustom ? null : deriveTitle(body);
   db.update(notes)
     .set({ body, title: derived ?? existing.title, updatedAt: opts.now })
-    .where(eq(notes.id, id))
+    .where(and(eq(notes.id, id), eq(notes.userId, userId)))
     .run();
-  return getNote(db, id);
+  return getNote(db, userId, id);
 }
 
-/** Delete a Note; returns true if a row was removed. */
-export function deleteNote(db: Db, id: string): boolean {
-  return db.delete(notes).where(eq(notes.id, id)).run().changes > 0;
+export function deleteNote(db: Db, userId: number, id: string): boolean {
+  return (
+    db
+      .delete(notes)
+      .where(and(eq(notes.id, id), eq(notes.userId, userId)))
+      .run().changes > 0
+  );
 }
 
-/** Set a custom Title; subsequent Body edits will not overwrite it. */
 export function renameNote(
   db: Db,
+  userId: number,
   id: string,
   title: string,
   opts: { now: number },
 ): Note | null {
-  const existing = getNote(db, id);
+  const existing = getNote(db, userId, id);
   if (!existing) return null;
   db.update(notes)
     .set({ title, titleIsCustom: true, updatedAt: opts.now })
-    .where(eq(notes.id, id))
+    .where(and(eq(notes.id, id), eq(notes.userId, userId)))
     .run();
-  return getNote(db, id);
+  return getNote(db, userId, id);
 }

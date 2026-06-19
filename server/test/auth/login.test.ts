@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import type { Hono } from "hono";
 import { buildTestApp } from "../helpers/app";
-import { setPasscode, getAuth } from "../../src/auth/auth-repo";
+import { setPasscode } from "../../src/auth/auth-repo";
 
 function login(app: Hono, passcode: string) {
   return app.request("/api/login", {
@@ -14,7 +14,7 @@ function login(app: Hono, passcode: string) {
 describe("POST /api/login", () => {
   it("accepts the correct passcode and sets a session cookie", async () => {
     const { app, db } = buildTestApp();
-    await setPasscode(db, "1234");
+    await setPasscode(db, 1, "1234");
 
     const res = await login(app, "1234");
 
@@ -25,14 +25,13 @@ describe("POST /api/login", () => {
     expect(cookie.toLowerCase()).toContain("httponly");
   });
 
-  it("rejects a wrong passcode and counts the failed attempt", async () => {
+  it("rejects a wrong passcode", async () => {
     const { app, db } = buildTestApp();
-    await setPasscode(db, "1234");
+    await setPasscode(db, 1, "1234");
 
     const res = await login(app, "0000");
 
     expect(res.status).toBe(401);
-    expect(getAuth(db).failedAttempts).toBe(1);
   });
 });
 
@@ -42,7 +41,7 @@ describe("login lockout", () => {
   it("locks login for an hour after 5 failed attempts", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { app, db, setNow } = buildTestApp();
-    await setPasscode(db, "1234");
+    await setPasscode(db, 1, "1234");
     setNow(0);
 
     for (let i = 0; i < 5; i++) {
@@ -51,20 +50,20 @@ describe("login lockout", () => {
 
     // 6th attempt is locked out even with the correct passcode
     expect((await login(app, "1234")).status).toBe(429);
-    expect(warn).toHaveBeenCalled(); // the lockout was logged
+    expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });
 
   it("unlocks once the hour has passed", async () => {
     const { app, db, setNow } = buildTestApp();
-    await setPasscode(db, "1234");
+    await setPasscode(db, 1, "1234");
     setNow(0);
     for (let i = 0; i < 5; i++) await login(app, "0000");
 
-    setNow(HOUR_MS - 1); // still locked just before the hour
+    setNow(HOUR_MS - 1);
     expect((await login(app, "1234")).status).toBe(429);
 
-    setNow(HOUR_MS); // unlocked at the hour
+    setNow(HOUR_MS);
     expect((await login(app, "1234")).status).toBe(200);
   });
 });

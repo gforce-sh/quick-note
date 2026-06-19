@@ -1,54 +1,50 @@
-import { eq } from "drizzle-orm";
-import type { Db } from "../db";
-import { auth } from "../db/schema";
-import { hashPasscode } from "./passcode";
+import { eq } from 'drizzle-orm';
+import type { Db } from '../db';
+import { auth } from '../db/schema';
+import { hashPasscode, verifyPasscode } from './passcode';
 
-export interface AuthRow {
+export interface AuthUser {
+  id: number;
+  name: string;
   passcodeHash: string | null;
-  failedAttempts: number;
-  lockedUntil: number | null;
 }
 
-/** Read the singleton auth row. */
-export function getAuth(db: Db): AuthRow {
-  const row = db.select().from(auth).where(eq(auth.id, 1)).get();
-  if (!row) throw new Error("auth row missing — migrations did not run");
-  return {
-    passcodeHash: row.passcodeHash,
-    failedAttempts: row.failedAttempts,
-    lockedUntil: row.lockedUntil,
-  };
-}
-
-/** Hash and store the Passcode. */
-export async function setPasscode(db: Db, passcode: string): Promise<void> {
-  const hash = await hashPasscode(passcode);
-  db.update(auth).set({ passcodeHash: hash }).where(eq(auth.id, 1)).run();
+/** Read a single auth user by id, or null if not found. */
+export function getAuth(db: Db, userId: number): AuthUser | null {
+  const row = db.select().from(auth).where(eq(auth.id, userId)).get();
+  if (!row) return null;
+  return { id: row.id, name: row.name, passcodeHash: row.passcodeHash };
 }
 
 /**
- * Record one failed Passcode attempt. When the count reaches
- * `maxAttempts`, a Lockout is set until `now + lockMs`. Returns the new
- * state (so the caller can log a lockout).
+ * Find the auth user whose passcode hash matches the given passcode.
+ * Returns null if no user matches.
  */
-export function recordFailure(
+export async function findUserByPasscode(
   db: Db,
-  opts: { now: number; maxAttempts: number; lockMs: number },
-): { failedAttempts: number; lockedUntil: number | null } {
-  const failedAttempts = getAuth(db).failedAttempts + 1;
-  const lockedUntil =
-    failedAttempts >= opts.maxAttempts ? opts.now + opts.lockMs : null;
-  db.update(auth)
-    .set({ failedAttempts, lockedUntil })
-    .where(eq(auth.id, 1))
-    .run();
-  return { failedAttempts, lockedUntil };
+  passcode: string,
+): Promise<AuthUser | null> {
+  const rows = db.select().from(auth).all();
+  for (const row of rows) {
+    if (
+      row.passcodeHash &&
+      (await verifyPasscode(row.passcodeHash, passcode))
+    ) {
+      return { id: row.id, name: row.name, passcodeHash: row.passcodeHash };
+    }
+  }
+  return null;
 }
 
-/** Reset the failed-attempt counter and clear any Lockout. */
-export function clearFailures(db: Db): void {
-  db.update(auth)
-    .set({ failedAttempts: 0, lockedUntil: null })
-    .where(eq(auth.id, 1))
-    .run();
+/** Hash and store a passcode for a specific user. */
+/** Seeding workflow:
+npm run set-passcode -- alice 1234
+npm run set-passcode -- bob 5678 */
+export async function setPasscode(
+  db: Db,
+  userId: number,
+  passcode: string,
+): Promise<void> {
+  const hash = await hashPasscode(passcode);
+  db.update(auth).set({ passcodeHash: hash }).where(eq(auth.id, userId)).run();
 }

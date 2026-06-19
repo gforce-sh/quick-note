@@ -2,9 +2,10 @@ import { describe, it, expect } from "vitest";
 import type { Hono } from "hono";
 import { buildTestApp } from "../helpers/app";
 import { setPasscode } from "../../src/auth/auth-repo";
+import type { Db } from "../../src/db";
 
-async function loginCookie(app: Hono, db: Parameters<typeof setPasscode>[0]) {
-  await setPasscode(db, "1234");
+async function loginCookie(app: Hono, db: Db) {
+  await setPasscode(db, 1, "1234");
   const res = await app.request("/api/login", {
     method: "POST",
     headers: { "content-type": "application/json" },
