@@ -46,7 +46,7 @@ describe("PATCH /api/notes/:id — body", () => {
 });
 
 describe("PATCH /api/notes/:id — rename", () => {
-  it("sets a custom title that body edits do not overwrite", async () => {
+  it("sets the title", async () => {
     const { app, authCookie } = buildTestApp();
     const cookie = authCookie();
     const created = await createNote(app, cookie);
@@ -54,11 +54,18 @@ describe("PATCH /api/notes/:id — rename", () => {
     const renamed = await (
       await patch(app, cookie, created.id, { title: "Groceries" })
     ).json();
-    expect(renamed).toMatchObject({ title: "Groceries", titleIsCustom: true });
+    expect(renamed).toMatchObject({ title: "Groceries" });
+  });
+
+  it("body edit re-derives the title, overwriting a manual rename", async () => {
+    const { app, authCookie } = buildTestApp();
+    const cookie = authCookie();
+    const created = await createNote(app, cookie);
+    await patch(app, cookie, created.id, { title: "Groceries" });
 
     const edited = await (
       await patch(app, cookie, created.id, { body: "# Different heading" })
     ).json();
-    expect(edited.title).toBe("Groceries");
+    expect(edited.title).toBe("Different heading");
   });
 });

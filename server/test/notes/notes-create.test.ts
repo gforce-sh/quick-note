@@ -23,7 +23,6 @@ describe("POST /api/notes", () => {
     const note = await res.json();
     expect(note).toMatchObject({
       body: "",
-      titleIsCustom: false,
       title: "New note 2026-06-06 14:32",
     });
     expect(typeof note.id).toBe("string");

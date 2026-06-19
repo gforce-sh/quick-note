@@ -11,9 +11,6 @@ export const notes = sqliteTable("notes", {
   userId: integer("user_id").notNull().references(() => auth.id),
   title: text("title").notNull(),
   body: text("body").notNull().default(""),
-  titleIsCustom: integer("title_is_custom", { mode: "boolean" })
-    .notNull()
-    .default(false),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });

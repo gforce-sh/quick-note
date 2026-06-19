@@ -20,7 +20,6 @@ const noteFields = {
   id: notes.id,
   title: notes.title,
   body: notes.body,
-  titleIsCustom: notes.titleIsCustom,
   createdAt: notes.createdAt,
   updatedAt: notes.updatedAt,
 };
@@ -30,7 +29,6 @@ export function createNote(db: Db, opts: { now: number; userId: number }): Note 
     id: randomUUID(),
     title: defaultTitle(opts.now),
     body: "",
-    titleIsCustom: false,
     createdAt: opts.now,
     updatedAt: opts.now,
   };
@@ -66,7 +64,7 @@ export function updateNoteBody(
 ): Note | null {
   const existing = getNote(db, userId, id);
   if (!existing) return null;
-  const derived = existing.titleIsCustom ? null : deriveTitle(body);
+  const derived = deriveTitle(body);
   db.update(notes)
     .set({ body, title: derived ?? existing.title, updatedAt: opts.now })
     .where(and(eq(notes.id, id), eq(notes.userId, userId)))
@@ -93,7 +91,7 @@ export function renameNote(
   const existing = getNote(db, userId, id);
   if (!existing) return null;
   db.update(notes)
-    .set({ title, titleIsCustom: true, updatedAt: opts.now })
+    .set({ title, updatedAt: opts.now })
     .where(and(eq(notes.id, id), eq(notes.userId, userId)))
     .run();
   return getNote(db, userId, id);

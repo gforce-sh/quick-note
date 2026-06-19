@@ -13,7 +13,6 @@ export interface Note {
   id: string;
   title: string;
   body: string;
-  titleIsCustom: boolean;
   createdAt: number;
   updatedAt: number;
 }

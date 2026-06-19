@@ -46,7 +46,6 @@ export function migrate(sqlite: DatabaseSync): void {
       user_id INTEGER NOT NULL REFERENCES auth(id),
       title TEXT NOT NULL,
       body TEXT NOT NULL DEFAULT '',
-      title_is_custom INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
