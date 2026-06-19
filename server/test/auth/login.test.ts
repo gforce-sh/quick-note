@@ -4,14 +4,14 @@ import { buildTestApp } from "../helpers/app";
 import { setPasscode } from "../../src/auth/auth-repo";
 
 function login(app: Hono, passcode: string) {
-  return app.request("/api/login", {
+  return app.request("/api/v1/login", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ passcode }),
   });
 }
 
-describe("POST /api/login", () => {
+describe("POST /api/v1/login", () => {
   it("accepts the correct passcode and sets a session cookie", async () => {
     const { app, db } = buildTestApp();
     await setPasscode(db, 1, "1234");

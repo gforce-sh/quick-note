@@ -4,19 +4,19 @@ import { buildTestApp } from "../helpers/app";
 
 async function createNote(app: Hono, cookie: string) {
   return (
-    await app.request("/api/notes", { method: "POST", headers: { cookie } })
+    await app.request("/api/v1/notes", { method: "POST", headers: { cookie } })
   ).json();
 }
 
 function patch(app: Hono, cookie: string, id: string, body: unknown) {
-  return app.request(`/api/notes/${id}`, {
+  return app.request(`/api/v1/notes/${id}`, {
     method: "PATCH",
     headers: { cookie, "content-type": "application/json" },
     body: JSON.stringify(body),
   });
 }
 
-describe("PATCH /api/notes/:id — body", () => {
+describe("PATCH /api/v1/notes/:id — body", () => {
   it("updates the body, re-derives the title, and bumps updatedAt", async () => {
     const { app, authCookie, setNow } = buildTestApp();
     const cookie = authCookie();
@@ -45,7 +45,7 @@ describe("PATCH /api/notes/:id — body", () => {
   });
 });
 
-describe("PATCH /api/notes/:id — rename", () => {
+describe("PATCH /api/v1/notes/:id — rename", () => {
   it("sets the title", async () => {
     const { app, authCookie } = buildTestApp();
     const cookie = authCookie();

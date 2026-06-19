@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { buildTestApp } from "../helpers/app";
 
-describe("POST /api/notes", () => {
+describe("POST /api/v1/notes", () => {
   it("requires a session", async () => {
     const { app } = buildTestApp();
 
-    const res = await app.request("/api/notes", { method: "POST" });
+    const res = await app.request("/api/v1/notes", { method: "POST" });
 
     expect(res.status).toBe(401);
   });
@@ -14,7 +14,7 @@ describe("POST /api/notes", () => {
     const { app, authCookie, setNow } = buildTestApp();
     setNow(Date.UTC(2026, 5, 6, 14, 32));
 
-    const res = await app.request("/api/notes", {
+    const res = await app.request("/api/v1/notes", {
       method: "POST",
       headers: { cookie: authCookie() },
     });

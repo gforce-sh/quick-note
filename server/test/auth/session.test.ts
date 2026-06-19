@@ -6,7 +6,7 @@ import type { Db } from "../../src/db";
 
 async function loginCookie(app: Hono, db: Db) {
   await setPasscode(db, 1, "1234");
-  const res = await app.request("/api/login", {
+  const res = await app.request("/api/v1/login", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ passcode: "1234" }),
@@ -14,17 +14,17 @@ async function loginCookie(app: Hono, db: Db) {
   return (res.headers.get("set-cookie") ?? "").split(";")[0] ?? "";
 }
 
-describe("GET /api/session", () => {
+describe("GET /api/v1/session", () => {
   it("rejects a request with no session cookie", async () => {
     const { app } = buildTestApp();
 
-    expect((await app.request("/api/session")).status).toBe(401);
+    expect((await app.request("/api/v1/session")).status).toBe(401);
   });
 
   it("rejects an invalid session cookie", async () => {
     const { app } = buildTestApp();
 
-    const res = await app.request("/api/session", {
+    const res = await app.request("/api/v1/session", {
       headers: { cookie: "session=not-a-real-token" },
     });
 
@@ -35,7 +35,7 @@ describe("GET /api/session", () => {
     const { app, db } = buildTestApp();
     const cookie = await loginCookie(app, db);
 
-    const res = await app.request("/api/session", { headers: { cookie } });
+    const res = await app.request("/api/v1/session", { headers: { cookie } });
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ authenticated: true });

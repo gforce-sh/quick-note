@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { buildTestApp } from "./helpers/app";
 
-describe("GET /api/health", () => {
+describe("GET /api/v1/health", () => {
   it("reports the service is ok", async () => {
     const { app } = buildTestApp();
 
-    const res = await app.request("/api/health");
+    const res = await app.request("/api/v1/health");
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ status: "ok" });

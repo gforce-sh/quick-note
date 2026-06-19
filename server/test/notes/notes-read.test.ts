@@ -3,18 +3,18 @@ import type { Hono } from "hono";
 import { buildTestApp } from "../helpers/app";
 
 async function createNote(app: Hono, cookie: string) {
-  const res = await app.request("/api/notes", {
+  const res = await app.request("/api/v1/notes", {
     method: "POST",
     headers: { cookie },
   });
   return res.json();
 }
 
-describe("GET /api/notes", () => {
+describe("GET /api/v1/notes", () => {
   it("requires a session", async () => {
     const { app } = buildTestApp();
 
-    expect((await app.request("/api/notes")).status).toBe(401);
+    expect((await app.request("/api/v1/notes")).status).toBe(401);
   });
 
   it("lists notes most-recently-updated first, without bodies", async () => {
@@ -25,7 +25,7 @@ describe("GET /api/notes", () => {
     setNow(2000);
     const b = await createNote(app, cookie);
 
-    const res = await app.request("/api/notes", { headers: { cookie } });
+    const res = await app.request("/api/v1/notes", { headers: { cookie } });
 
     expect(res.status).toBe(200);
     const list = await res.json();
@@ -34,13 +34,13 @@ describe("GET /api/notes", () => {
   });
 });
 
-describe("GET /api/notes/:id", () => {
+describe("GET /api/v1/notes/:id", () => {
   it("returns a note by id", async () => {
     const { app, authCookie } = buildTestApp();
     const cookie = authCookie();
     const created = await createNote(app, cookie);
 
-    const res = await app.request(`/api/notes/${created.id}`, {
+    const res = await app.request(`/api/v1/notes/${created.id}`, {
       headers: { cookie },
     });
 
@@ -51,7 +51,7 @@ describe("GET /api/notes/:id", () => {
   it("404s for a missing note", async () => {
     const { app, authCookie } = buildTestApp();
 
-    const res = await app.request("/api/notes/does-not-exist", {
+    const res = await app.request("/api/v1/notes/does-not-exist", {
       headers: { cookie: authCookie() },
     });
 
