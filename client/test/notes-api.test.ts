@@ -52,7 +52,7 @@ describe("notes-api", () => {
 
     expect(note.id).toBe("n1");
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/notes",
+      "/api/v1/notes",
       expect.objectContaining({ method: "POST" }),
     );
   });
@@ -64,7 +64,7 @@ describe("notes-api", () => {
     await deleteNote("n1");
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/notes/n1",
+      "/api/v1/notes/n1",
       expect.objectContaining({ method: "DELETE" }),
     );
   });
@@ -86,7 +86,7 @@ describe("notes-api", () => {
 
     expect(note.body).toBe("new body");
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/notes/1",
+      "/api/v1/notes/1",
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ body: "new body" }),
@@ -111,7 +111,7 @@ describe("notes-api", () => {
 
     expect(note.title).toBe("Renamed");
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/notes/1",
+      "/api/v1/notes/1",
       expect.objectContaining({
         method: "PATCH",
         body: JSON.stringify({ title: "Renamed" }),

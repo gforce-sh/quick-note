@@ -1,12 +1,5 @@
-import {
-  createResource,
-  createSignal,
-  lazy,
-  onMount,
-  Show,
-  Suspense,
-} from "solid-js";
-import type { JSX } from "solid-js";
+import { useState, useEffect, lazy, Suspense } from "react";
+import type { ReactNode } from "react";
 import type { Note, NoteSummary } from "@notes/shared";
 import { Sidebar } from "./Sidebar";
 import {
@@ -38,7 +31,7 @@ const defaultApi: NotesApi = {
   rename: renameNote,
 };
 
-export type RenderNote = (note: Note) => JSX.Element;
+export type RenderNote = (note: Note) => ReactNode;
 
 export interface NotesAppProps {
   selectedId: string | null;
@@ -50,70 +43,70 @@ export interface NotesAppProps {
 }
 
 export function NotesApp(props: NotesAppProps) {
+  const { selectedId, onSelect, onLogout } = props;
   const api = props.api ?? defaultApi;
   const renderNote: RenderNote =
     props.renderNote ?? ((note) => <NoteEditor note={note} />);
 
-  const renameInList = (id: string, title: string) =>
-    setNotes(notes().map((n) => (n.id === id ? { ...n, title } : n)));
+  const [notes, setNotes] = useState<NoteSummary[]>([]);
+  const [current, setCurrent] = useState<Note | null | undefined>(undefined);
+
+  useEffect(() => {
+    api.list().then(setNotes);
+  }, []);
+
+  useEffect(() => {
+    if (selectedId) {
+      setCurrent(undefined);
+      api.get(selectedId).then(setCurrent);
+    } else {
+      setCurrent(null);
+    }
+  }, [selectedId]);
 
   const handleRename = (id: string, title: string) => {
-    renameInList(id, title); // optimistic
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, title } : n))); // optimistic
     void api.rename(id, title).catch(() => {});
   };
 
-  const [notes, setNotes] = createSignal<NoteSummary[]>([]);
-  onMount(async () => setNotes(await api.list()));
-
-  const [current] = createResource(
-    () => props.selectedId,
-    (id) => (id ? api.get(id) : Promise.resolve(null)),
-  );
-
   const handleNew = async () => {
     const created = await api.create();
-    setNotes([
+    setNotes((prev) => [
       { id: created.id, title: created.title, updatedAt: created.updatedAt },
-      ...notes(),
+      ...prev,
     ]);
-    props.onSelect(created.id);
+    onSelect(created.id);
   };
 
   const handleDelete = async (id: string) => {
     await api.remove(id);
-    setNotes(notes().filter((n) => n.id !== id));
-    if (props.selectedId === id) props.onSelect(null);
+    setNotes((prev) => prev.filter((n) => n.id !== id));
+    if (selectedId === id) onSelect(null);
   };
 
   return (
-    <div class="app">
+    <div className="app">
       <Sidebar
-        notes={notes()}
-        selectedId={props.selectedId}
-        onSelect={props.onSelect}
+        notes={notes}
+        selectedId={selectedId}
+        onSelect={onSelect}
         onNew={handleNew}
         onDelete={handleDelete}
         onRename={handleRename}
-        onLogout={props.onLogout}
+        onLogout={onLogout}
       />
       <main>
-        <Show
-          when={props.selectedId ? current() : undefined}
-          keyed
-          fallback={
-            <p>
-              {notes().length === 0
-                ? "No notes yet. Create your first note."
-                : "Select a note."}
-            </p>
-          }
-        >
-          {(note) => (
-            <Suspense fallback={<p>Loading editor…</p>}>
-              {renderNote(note)}
-            </Suspense>
-          )}
-        </Show>
+        {selectedId && current ? (
+          <Suspense fallback={<p>Loading editor…</p>}>
+            {renderNote(current)}
+          </Suspense>
+        ) : (
+          <p>
+            {notes.length === 0
+              ? "No notes yet. Create your first note."
+              : "Select a note."}
+          </p>
+        )}
       </main>
     </div>
   );

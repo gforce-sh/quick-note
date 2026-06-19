@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "../src/App";
 import type { NotesApi } from "../src/NotesApp";
@@ -34,21 +34,19 @@ afterEach(() => window.history.pushState({}, "", "/"));
 
 describe("App auth guard", () => {
   it("shows the login screen when there is no session", async () => {
-    render(() => (
-      <App checkSession={() => Promise.resolve(false)} login={vi.fn()} />
-    ));
+    render(<App checkSession={() => Promise.resolve(false)} login={vi.fn()} />);
 
     expect(await screen.findAllByRole("textbox")).toHaveLength(4);
   });
 
   it("shows the notes app when a session exists", async () => {
-    render(() => (
+    render(
       <App
         checkSession={() => Promise.resolve(true)}
         login={vi.fn()}
         notesApi={notesApi([])}
-      />
-    ));
+      />,
+    );
 
     expect(
       await screen.findByRole("button", { name: "New note" }),
@@ -57,13 +55,13 @@ describe("App auth guard", () => {
   });
 
   it("enters the notes app after a successful login", async () => {
-    render(() => (
+    render(
       <App
         checkSession={() => Promise.resolve(false)}
         login={vi.fn().mockResolvedValue({ ok: true })}
         notesApi={notesApi([])}
-      />
-    ));
+      />,
+    );
     await screen.findAllByRole("textbox");
 
     const user = userEvent.setup();
@@ -76,14 +74,14 @@ describe("App auth guard", () => {
   });
 
   it("logs out and returns to the login screen", async () => {
-    render(() => (
+    render(
       <App
         checkSession={() => Promise.resolve(true)}
         login={vi.fn()}
         logout={vi.fn().mockResolvedValue(undefined)}
         notesApi={notesApi([])}
-      />
-    ));
+      />,
+    );
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: /log out/i }));
 
@@ -93,14 +91,14 @@ describe("App auth guard", () => {
   it("selects the note named in the URL", async () => {
     window.history.pushState({}, "", "/n/1");
 
-    render(() => (
+    render(
       <App
         checkSession={() => Promise.resolve(true)}
         login={vi.fn()}
         notesApi={notesApi([note("1", "Alpha", "url body")])}
         renderNote={(n) => <pre>{n.body}</pre>}
-      />
-    ));
+      />,
+    );
 
     expect(await screen.findByText("url body")).toBeTruthy();
   });

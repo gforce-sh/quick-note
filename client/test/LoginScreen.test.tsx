@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LoginScreen } from "../src/LoginScreen";
 
@@ -13,12 +13,12 @@ async function typeCode(code: string) {
 
 describe("LoginScreen", () => {
   it("shows four passcode inputs", () => {
-    render(() => (
+    render(
       <LoginScreen
         onSubmit={vi.fn().mockResolvedValue({ ok: true })}
         onSuccess={vi.fn()}
-      />
-    ));
+      />,
+    );
 
     expect(screen.getAllByRole("textbox")).toHaveLength(4);
   });
@@ -26,7 +26,7 @@ describe("LoginScreen", () => {
   it("submits the four digits and signals success", async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ok: true });
     const onSuccess = vi.fn();
-    render(() => <LoginScreen onSubmit={onSubmit} onSuccess={onSuccess} />);
+    render(<LoginScreen onSubmit={onSubmit} onSuccess={onSuccess} />);
 
     await typeCode("1234");
 
@@ -36,7 +36,7 @@ describe("LoginScreen", () => {
 
   it("shows an error on an incorrect passcode", async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ok: false, reason: "invalid" });
-    render(() => <LoginScreen onSubmit={onSubmit} onSuccess={vi.fn()} />);
+    render(<LoginScreen onSubmit={onSubmit} onSuccess={vi.fn()} />);
 
     await typeCode("0000");
 
@@ -46,7 +46,7 @@ describe("LoginScreen", () => {
 
   it("shows a lockout message after too many attempts", async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ok: false, reason: "locked" });
-    render(() => <LoginScreen onSubmit={onSubmit} onSuccess={vi.fn()} />);
+    render(<LoginScreen onSubmit={onSubmit} onSuccess={vi.fn()} />);
 
     await typeCode("0000");
 

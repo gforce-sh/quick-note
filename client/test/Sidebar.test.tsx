@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Sidebar } from "../src/Sidebar";
 
@@ -18,7 +18,7 @@ function renderSidebar(overrides = {}) {
     onRename: vi.fn(),
     ...overrides,
   };
-  render(() => <Sidebar {...props} />);
+  render(<Sidebar {...props} />);
   return props;
 }
 

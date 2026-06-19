@@ -1,4 +1,4 @@
 import { afterEach } from "vitest";
-import { cleanup } from "@solidjs/testing-library";
+import { cleanup } from "@testing-library/react";
 
 afterEach(() => cleanup());

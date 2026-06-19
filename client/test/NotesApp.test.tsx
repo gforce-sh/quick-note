@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { createSignal } from "solid-js";
-import { render, screen } from "@solidjs/testing-library";
+import { useState } from "react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotesApp, type NotesApi } from "../src/NotesApp";
 import type { Note, NoteSummary } from "@notes/shared";
@@ -32,12 +32,12 @@ function fakeApi(initial: Note[] = []): NotesApi {
   };
 }
 
-function Harness(props: { api: NotesApi }) {
-  const [sel, setSel] = createSignal<string | null>(null);
+function Harness({ api }: { api: NotesApi }) {
+  const [sel, setSel] = useState<string | null>(null);
   return (
     <NotesApp
-      api={props.api}
-      selectedId={sel()}
+      api={api}
+      selectedId={sel}
       onSelect={setSel}
       renderNote={(n) => (
         <div>
@@ -51,19 +51,19 @@ function Harness(props: { api: NotesApi }) {
 
 describe("NotesApp", () => {
   it("shows an empty state when there are no notes", async () => {
-    render(() => <Harness api={fakeApi([])} />);
+    render(<Harness api={fakeApi([])} />);
 
     expect(await screen.findByText(/no notes yet/i)).toBeTruthy();
   });
 
   it("lists notes from the api", async () => {
-    render(() => <Harness api={fakeApi([note("1", "Alpha")])} />);
+    render(<Harness api={fakeApi([note("1", "Alpha")])} />);
 
     expect(await screen.findByText("Alpha")).toBeTruthy();
   });
 
   it("shows a note's body when selected", async () => {
-    render(() => <Harness api={fakeApi([note("1", "Alpha", "hello body")])} />);
+    render(<Harness api={fakeApi([note("1", "Alpha", "hello body")])} />);
 
     await userEvent.setup().click(await screen.findByText("Alpha"));
 
@@ -71,7 +71,7 @@ describe("NotesApp", () => {
   });
 
   it("creates a note and selects it", async () => {
-    render(() => <Harness api={fakeApi([])} />);
+    render(<Harness api={fakeApi([])} />);
     await screen.findByText(/no notes yet/i);
 
     await userEvent.setup().click(screen.getByRole("button", { name: "New note" }));
@@ -83,7 +83,7 @@ describe("NotesApp", () => {
 
   it("renames a note from the sidebar", async () => {
     const api = fakeApi([note("1", "Alpha")]);
-    render(() => <Harness api={api} />);
+    render(<Harness api={api} />);
     const user = userEvent.setup();
 
     await user.dblClick(await screen.findByText("Alpha"));
@@ -96,7 +96,7 @@ describe("NotesApp", () => {
   });
 
   it("clears the view after deleting the selected note", async () => {
-    render(() => <Harness api={fakeApi([note("1", "Alpha", "hi")])} />);
+    render(<Harness api={fakeApi([note("1", "Alpha", "hi")])} />);
     const user = userEvent.setup();
     await user.click(await screen.findByText("Alpha"));
     await screen.findByText("hi");

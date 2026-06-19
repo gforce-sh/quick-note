@@ -38,7 +38,7 @@ describe("api.login", () => {
     await logout();
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/logout",
+      "/api/v1/logout",
       expect.objectContaining({ method: "POST" }),
     );
   });

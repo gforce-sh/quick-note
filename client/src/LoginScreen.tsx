@@ -1,4 +1,4 @@
-import { createSignal, For, Show } from "solid-js";
+import { useState, useRef } from "react";
 import type { LoginResult } from "./api";
 
 export interface LoginScreenProps {
@@ -8,21 +8,21 @@ export interface LoginScreenProps {
 
 const SLOTS = [0, 1, 2, 3];
 
-export function LoginScreen(props: LoginScreenProps) {
-  const [digits, setDigits] = createSignal(["", "", "", ""]);
-  const [error, setError] = createSignal<string | null>(null);
-  const inputs: (HTMLInputElement | undefined)[] = [];
+export function LoginScreen({ onSubmit, onSuccess }: LoginScreenProps) {
+  const [digits, setDigits] = useState(["", "", "", ""]);
+  const [error, setError] = useState<string | null>(null);
+  const inputsRef = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
 
   const reset = () => {
     setDigits(["", "", "", ""]);
-    inputs[0]?.focus();
+    inputsRef.current[0]?.focus();
   };
 
   const submit = async (passcode: string) => {
     setError(null);
-    const result = await props.onSubmit(passcode);
+    const result = await onSubmit(passcode);
     if (result.ok) {
-      props.onSuccess();
+      onSuccess();
       return;
     }
     setError(
@@ -33,36 +33,35 @@ export function LoginScreen(props: LoginScreenProps) {
     reset();
   };
 
-  const handleInput = (i: number, raw: string) => {
+  const handleChange = (i: number, raw: string) => {
     const digit = raw.replace(/\D/g, "").slice(-1);
-    const next = [...digits()];
+    const next = [...digits];
     next[i] = digit;
     setDigits(next);
-    if (digit && i < 3) inputs[i + 1]?.focus();
+    if (digit && i < 3) inputsRef.current[i + 1]?.focus();
     if (next.every((d) => d !== "")) void submit(next.join(""));
   };
 
   return (
-    <main class="login">
+    <main className="login">
       <form aria-label="Enter passcode" onSubmit={(e) => e.preventDefault()}>
-        <For each={SLOTS}>
-          {(i) => (
-            <input
-              ref={(el) => (inputs[i] = el)}
-              type="text"
-              inputmode="numeric"
-              maxlength={1}
-              autocomplete="off"
-              aria-label={`Passcode digit ${i + 1}`}
-              value={digits()[i] ?? ""}
-              onInput={(e) => handleInput(i, e.currentTarget.value)}
-            />
-          )}
-        </For>
+        {SLOTS.map((i) => (
+          <input
+            key={i}
+            ref={(el) => {
+              inputsRef.current[i] = el;
+            }}
+            type="text"
+            inputMode="numeric"
+            maxLength={1}
+            autoComplete="off"
+            aria-label={`Passcode digit ${i + 1}`}
+            value={digits[i] ?? ""}
+            onChange={(e) => handleChange(i, e.currentTarget.value)}
+          />
+        ))}
       </form>
-      <Show when={error()}>
-        <p role="alert">{error()}</p>
-      </Show>
+      {error && <p role="alert">{error}</p>}
     </main>
   );
 }

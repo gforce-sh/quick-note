@@ -1,4 +1,4 @@
-import { createSignal, For, onCleanup, onMount, Show } from "solid-js";
+import { useState, useEffect } from "react";
 import type { NoteSummary } from "@notes/shared";
 
 export interface SidebarProps {
@@ -12,89 +12,88 @@ export interface SidebarProps {
 }
 
 export function Sidebar(props: SidebarProps) {
+  const { notes, selectedId, onSelect, onNew, onDelete, onRename, onLogout } = props;
   // Which note's delete CTA is "armed" (awaiting a confirming second click).
-  const [armedId, setArmedId] = createSignal<string | null>(null);
+  const [armedId, setArmedId] = useState<string | null>(null);
   // Which note's title is being renamed inline.
-  const [editingId, setEditingId] = createSignal<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Clicking anywhere else cancels an armed delete (no dialogs). Listen on
-  // window: Solid delegates click to document, so the armed button's
-  // stopPropagation keeps its own click from reaching here.
-  const cancel = () => setArmedId(null);
-  onMount(() => window.addEventListener("click", cancel));
-  onCleanup(() => window.removeEventListener("click", cancel));
+  // Clicking anywhere else cancels an armed delete (no dialogs). The armed
+  // button's stopPropagation keeps its own click from reaching here.
+  useEffect(() => {
+    const cancel = () => setArmedId(null);
+    window.addEventListener("click", cancel);
+    return () => window.removeEventListener("click", cancel);
+  }, []);
 
-  const handleDelete = (e: MouseEvent, id: string) => {
+  const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (armedId() === id) {
+    if (armedId === id) {
       setArmedId(null);
-      props.onDelete(id);
+      onDelete(id);
     } else {
       setArmedId(id);
     }
   };
 
   const commitRename = (id: string, value: string, current: string) => {
-    if (editingId() !== id) return;
+    if (editingId !== id) return;
     setEditingId(null);
     const next = value.trim();
-    if (next && next !== current) props.onRename(id, next);
+    if (next && next !== current) onRename(id, next);
   };
 
   return (
-    <nav class="sidebar" aria-label="Notes">
-      <div class="sidebar-actions">
-        <button type="button" onClick={() => props.onNew()}>
+    <nav className="sidebar" aria-label="Notes">
+      <div className="sidebar-actions">
+        <button type="button" onClick={() => onNew()}>
           New note
         </button>
-        <button type="button" onClick={() => props.onLogout?.()}>
+        <button type="button" onClick={() => onLogout?.()}>
           Log out
         </button>
       </div>
       <ul>
-        <For each={props.notes}>
-          {(note) => (
-            <li>
-              <Show
-                when={editingId() === note.id}
-                fallback={
-                  <button
-                    type="button"
-                    aria-current={props.selectedId === note.id}
-                    onClick={() => props.onSelect(note.id)}
-                    onDblClick={() => setEditingId(note.id)}
-                  >
-                    {note.title}
-                  </button>
-                }
-              >
-                <input
-                  class="rename-input"
-                  aria-label="Rename note"
-                  value={note.title}
-                  ref={(el) => queueMicrotask(() => el.focus())}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      commitRename(note.id, e.currentTarget.value, note.title);
-                    } else if (e.key === "Escape") {
-                      setEditingId(null);
-                    }
-                  }}
-                  onBlur={(e) =>
-                    commitRename(note.id, e.currentTarget.value, note.title)
+        {notes.map((note) => (
+          <li key={note.id}>
+            {editingId === note.id ? (
+              <input
+                className="rename-input"
+                aria-label="Rename note"
+                defaultValue={note.title}
+                ref={(el) => {
+                  if (el) queueMicrotask(() => el.focus());
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    commitRename(note.id, e.currentTarget.value, note.title);
+                  } else if (e.key === "Escape") {
+                    setEditingId(null);
                   }
-                />
-              </Show>
+                }}
+                onBlur={(e) =>
+                  commitRename(note.id, e.currentTarget.value, note.title)
+                }
+              />
+            ) : (
               <button
                 type="button"
-                aria-label={`Delete ${note.title}`}
-                onClick={(e) => handleDelete(e, note.id)}
+                aria-current={selectedId === note.id}
+                onClick={() => onSelect(note.id)}
+                onDoubleClick={() => setEditingId(note.id)}
               >
-                {armedId() === note.id ? "Confirm?" : "Delete"}
+                {note.title}
               </button>
-            </li>
-          )}
-        </For>
+            )}
+            <button
+              type="button"
+              aria-label={`Delete ${note.title}`}
+              onClick={(e) => handleDelete(e, note.id)}
+            >
+              {armedId === note.id ? "Confirm?" : "Delete"}
+            </button>
+          </li>
+        ))}
       </ul>
     </nav>
   );
