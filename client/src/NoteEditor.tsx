@@ -22,7 +22,7 @@ export const NoteEditor = ({ note }: { note: Note }) => {
         initialContent={note.body}
         onSave={(content) => updateNoteBody(note.id, content).then(() => {})}
         onSaveStatus={setStatus}
-        theme="system"
+        theme="light"
       />
     </div>
   );
