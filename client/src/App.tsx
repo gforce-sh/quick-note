@@ -28,7 +28,7 @@ export const App = () => {
     <main>
       {authed === null && <p>Loading…</p>}
       {authed === true && (
-        <BrowserRouter>
+        <BrowserRouter basename="/quick-note">
           <Routes>
             <Route
               path="/n/:id"
