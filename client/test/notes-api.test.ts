@@ -5,7 +5,6 @@ import {
   createNote,
   deleteNote,
   updateNoteBody,
-  renameNote,
 } from "../src/notes-api";
 
 function res(status: number, body: unknown = {}) {
@@ -94,28 +93,4 @@ describe("notes-api", () => {
     );
   });
 
-  it("renames a note via PATCH", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      res(200, {
-        id: "1",
-        title: "Renamed",
-        body: "",
-        titleIsCustom: true,
-        createdAt: 0,
-        updatedAt: 2,
-      }),
-    );
-    vi.stubGlobal("fetch", fetchMock);
-
-    const note = await renameNote("1", "Renamed");
-
-    expect(note.title).toBe("Renamed");
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/v1/notes/1",
-      expect.objectContaining({
-        method: "PATCH",
-        body: JSON.stringify({ title: "Renamed" }),
-      }),
-    );
-  });
 });

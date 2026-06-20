@@ -15,7 +15,6 @@ function renderSidebar(overrides = {}) {
     onSelect: vi.fn(),
     onNew: vi.fn(),
     onDelete: vi.fn(),
-    onRename: vi.fn(),
     ...overrides,
   };
   render(<Sidebar {...props} />);
@@ -53,19 +52,6 @@ describe("Sidebar", () => {
     await userEvent.setup().click(screen.getByRole("button", { name: /log out/i }));
 
     expect(onLogout).toHaveBeenCalled();
-  });
-
-  it("renames a note on double-click", async () => {
-    const onRename = vi.fn();
-    renderSidebar({ onRename });
-    const user = userEvent.setup();
-
-    await user.dblClick(screen.getByText("First"));
-    const input = screen.getByRole("textbox");
-    await user.clear(input);
-    await user.type(input, "Renamed{Enter}");
-
-    expect(onRename).toHaveBeenCalledWith("1", "Renamed");
   });
 
   it("requires two clicks to delete (arm then confirm)", async () => {

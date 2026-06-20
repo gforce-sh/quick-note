@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { login, getSession, logout } from './api';
+import type { LoginResult } from './api';
 
 export function useAuth() {
   const [authed, setAuthed] = useState<boolean | null>(null);

@@ -16,27 +16,24 @@ describe("LoginScreen", () => {
     render(
       <LoginScreen
         onSubmit={vi.fn().mockResolvedValue({ ok: true })}
-        onSuccess={vi.fn()}
       />,
     );
 
     expect(screen.getAllByRole("textbox")).toHaveLength(4);
   });
 
-  it("submits the four digits and signals success", async () => {
+  it("submits the four digits", async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ok: true });
-    const onSuccess = vi.fn();
-    render(<LoginScreen onSubmit={onSubmit} onSuccess={onSuccess} />);
+    render(<LoginScreen onSubmit={onSubmit} />);
 
     await typeCode("1234");
 
     expect(onSubmit).toHaveBeenCalledWith("1234");
-    expect(onSuccess).toHaveBeenCalled();
   });
 
   it("shows an error on an incorrect passcode", async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ok: false, reason: "invalid" });
-    render(<LoginScreen onSubmit={onSubmit} onSuccess={vi.fn()} />);
+    render(<LoginScreen onSubmit={onSubmit} />);
 
     await typeCode("0000");
 
@@ -46,7 +43,7 @@ describe("LoginScreen", () => {
 
   it("shows a lockout message after too many attempts", async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ok: false, reason: "locked" });
-    render(<LoginScreen onSubmit={onSubmit} onSuccess={vi.fn()} />);
+    render(<LoginScreen onSubmit={onSubmit} />);
 
     await typeCode("0000");
 

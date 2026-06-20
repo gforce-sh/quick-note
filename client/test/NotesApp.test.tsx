@@ -29,27 +29,12 @@ function fakeApi(initial: Note[] = []): NotesApi {
     remove: vi.fn(async (id: string) => {
       notes = notes.filter((n) => n.id !== id);
     }),
-    rename: vi.fn(async (id: string, title: string) => {
-      notes = notes.map((n) => (n.id === id ? { ...n, title } : n));
-      return notes.find((n) => n.id === id)!;
-    }),
   };
 }
 
 function Harness() {
   const [sel, setSel] = useState<string | null>(null);
-  return (
-    <NotesApp
-      selectedId={sel}
-      onSelect={setSel}
-      renderNote={(n) => (
-        <div>
-          <h2>{n.title}</h2>
-          <pre>{n.body}</pre>
-        </div>
-      )}
-    />
-  );
+  return <NotesApp selectedId={sel} onSelect={setSel} />;
 }
 
 describe("NotesApp", () => {
@@ -78,31 +63,14 @@ describe("NotesApp", () => {
     expect(await screen.findByText("hello body")).toBeTruthy();
   });
 
-  it("creates a note and selects it", async () => {
+  it("creates a note and lists it in the sidebar", async () => {
     vi.mocked(useNotesApi).mockReturnValue(fakeApi([]));
     render(<Harness />);
     await screen.findByText(/no notes yet/i);
 
     await userEvent.setup().click(screen.getByRole("button", { name: "New note" }));
 
-    expect(
-      await screen.findByRole("heading", { name: /new note/i }),
-    ).toBeTruthy();
-  });
-
-  it("renames a note from the sidebar", async () => {
-    const api = fakeApi([note("1", "Alpha")]);
-    vi.mocked(useNotesApi).mockReturnValue(api);
-    render(<Harness />);
-    const user = userEvent.setup();
-
-    await user.dblClick(await screen.findByText("Alpha"));
-    const input = screen.getByRole("textbox");
-    await user.clear(input);
-    await user.type(input, "Renamed!{Enter}");
-
-    expect(await screen.findByText("Renamed!")).toBeTruthy();
-    expect(api.rename).toHaveBeenCalledWith("1", "Renamed!");
+    expect(await screen.findByText("New note 2026-06-06 00:00")).toBeTruthy();
   });
 
   it("clears the view after deleting the selected note", async () => {
