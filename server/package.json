@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsup && sed -i '' 's/from \"sqlite\"/from \"node:sqlite\"/g' dist/index.js",
+    "build": "tsup",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "set-passcode": "tsx src/cli/set-passcode.ts",

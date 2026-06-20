@@ -1,20 +1,16 @@
+import { readFileSync, writeFileSync } from "node:fs";
 import { defineConfig } from "tsup";
-import type { Plugin } from "esbuild";
-
-const preserveNodeProtocol: Plugin = {
-  name: "preserve-node-protocol",
-  setup(build) {
-    build.onResolve({ filter: /^node:/ }, (args) => ({
-      path: args.path,
-      external: true,
-    }));
-  },
-};
 
 export default defineConfig({
   entry: ["src/index.ts"],
   format: ["esm"],
   outDir: "dist",
   platform: "node",
-  esbuildPlugins: [preserveNodeProtocol],
+  async onSuccess() {
+    const path = "dist/index.js";
+    writeFileSync(
+      path,
+      readFileSync(path, "utf8").replace(/from "sqlite"/g, 'from "node:sqlite"'),
+    );
+  },
 });
