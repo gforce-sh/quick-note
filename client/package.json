@@ -12,7 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "md-live-editor": "file:../../md-live-editor",
+    "md-live-editor": "md-live-editor-0.1.0.tgz",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.0.0"
