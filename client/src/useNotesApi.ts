@@ -1,10 +1,4 @@
-import {
-  listNotes,
-  getNote,
-  createNote,
-  deleteNote,
-  renameNote,
-} from './notes-api';
+import { listNotes, getNote, createNote, deleteNote } from './notes-api';
 import type { Note, NoteSummary } from '@notes/shared';
 
 export interface NotesApi {
@@ -12,7 +6,6 @@ export interface NotesApi {
   get: (id: string) => Promise<Note | null>;
   create: () => Promise<Note>;
   remove: (id: string) => Promise<void>;
-  rename: (id: string, title: string) => Promise<Note>;
 }
 
 export const useNotesApi = (): NotesApi => {
@@ -21,6 +14,5 @@ export const useNotesApi = (): NotesApi => {
     get: getNote,
     create: createNote,
     remove: deleteNote,
-    rename: renameNote,
   };
 };

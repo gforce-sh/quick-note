@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { LoginResult } from './api';
 
 export interface LoginScreenProps {
@@ -16,6 +16,10 @@ export const LoginScreen = ({ onSubmit }: LoginScreenProps) => {
     null,
     null,
   ]);
+
+  useEffect(() => {
+    inputsRef.current[0]?.focus();
+  }, []);
 
   const reset = () => {
     setDigits(['', '', '', '']);

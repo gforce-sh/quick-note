@@ -42,8 +42,3 @@ async function patchNote(id: string, patch: object): Promise<Note> {
 export function updateNoteBody(id: string, body: string): Promise<Note> {
   return patchNote(id, { body });
 }
-
-/** Set a custom Title. */
-export function renameNote(id: string, title: string): Promise<Note> {
-  return patchNote(id, { title });
-}

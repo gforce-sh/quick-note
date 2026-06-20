@@ -34,11 +34,6 @@ export const NotesApp = ({ selectedId, onSelect, onLogout }: NotesAppProps) => {
     }
   }, [selectedId]);
 
-  const handleRename = (id: string, title: string) => {
-    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, title } : n))); // optimistic
-    void api.rename(id, title).catch(() => {});
-  };
-
   const handleNew = async () => {
     const created = await api.create();
     setNotes((prev) => [
@@ -62,7 +57,6 @@ export const NotesApp = ({ selectedId, onSelect, onLogout }: NotesAppProps) => {
         onSelect={onSelect}
         onNew={handleNew}
         onDelete={handleDelete}
-        onRename={handleRename}
         onLogout={onLogout}
       />
       {selectedId && current ? (

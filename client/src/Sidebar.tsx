@@ -7,7 +7,6 @@ export interface SidebarProps {
   onSelect: (id: string) => void;
   onNew: () => void;
   onDelete: (id: string) => void;
-  onRename: (id: string, title: string) => void;
   onLogout?: () => void;
 }
 
@@ -17,7 +16,6 @@ export const Sidebar = ({
   onSelect,
   onNew,
   onDelete,
-  onRename,
   onLogout,
 }: SidebarProps) => {
   // Which note's delete CTA is "armed" (awaiting a confirming second click).
@@ -39,11 +37,6 @@ export const Sidebar = ({
     } else {
       setArmedId(id);
     }
-  };
-
-  const commitRename = (id: string, value: string, current: string) => {
-    const next = value.trim();
-    if (next && next !== current) onRename(id, next);
   };
 
   return (
