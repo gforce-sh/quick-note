@@ -5,7 +5,9 @@ import { LoginScreen } from "../src/LoginScreen";
 
 async function typeCode(code: string) {
   const user = userEvent.setup();
-  const inputs = screen.getAllByRole("textbox");
+  const inputs = [1, 2, 3, 4].map((n) =>
+    screen.getByLabelText(`Passcode digit ${n}`),
+  );
   for (let i = 0; i < code.length; i++) {
     await user.type(inputs[i]!, code[i]!);
   }
@@ -19,7 +21,9 @@ describe("LoginScreen", () => {
       />,
     );
 
-    expect(screen.getAllByRole("textbox")).toHaveLength(4);
+    expect(
+      [1, 2, 3, 4].map((n) => screen.getByLabelText(`Passcode digit ${n}`)),
+    ).toHaveLength(4);
   });
 
   it("submits the four digits", async () => {

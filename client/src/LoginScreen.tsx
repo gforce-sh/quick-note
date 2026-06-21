@@ -56,7 +56,7 @@ export const LoginScreen = ({ onSubmit }: LoginScreenProps) => {
             ref={(el) => {
               inputsRef.current[i] = el;
             }}
-            type="text"
+            type="password"
             inputMode="numeric"
             maxLength={1}
             autoComplete="off"
