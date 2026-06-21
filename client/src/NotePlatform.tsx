@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import type { Note } from '@notes/shared';
-import type { NoteSummary } from '@notes/shared';
+import { useParams, useNavigate } from 'react-router-dom';
+import type { Note, NoteSummary } from '@notes/shared';
 import { ActionBar } from './ActionBar';
 import { NotePickerModal } from './NotePickerModal';
 import { useNotesApi } from './useNotesApi';
@@ -9,13 +9,12 @@ const NoteEditor = lazy(() =>
   import('./NoteEditor').then((m) => ({ default: m.NoteEditor })),
 );
 
-export interface NotesAppProps {
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
-  onLogout?: () => void;
-}
+export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
+  const { id } = useParams();
+  const selectedId = id ?? null;
+  const navigate = useNavigate();
+  const onSelect = (id: string | null) => navigate(id ? `/n/${id}` : '/');
 
-export const NotesApp = ({ selectedId, onSelect, onLogout }: NotesAppProps) => {
   const api = useNotesApi();
   const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [current, setCurrent] = useState<Note | null | undefined>(undefined);

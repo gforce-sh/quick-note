@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
-import { useState } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { NotesApp } from "../src/NotesApp";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
+import { NotePlatform } from "../src/NotePlatform";
 import { useNotesApi } from "../src/useNotesApi";
 import type { NotesApi } from "../src/useNotesApi";
 import type { Note, NoteSummary } from "@notes/shared";
@@ -32,26 +32,32 @@ function fakeApi(initial: Note[] = []): NotesApi {
   };
 }
 
-function Harness() {
-  const [sel, setSel] = useState<string | null>(null);
-  return <NotesApp selectedId={sel} onSelect={setSel} />;
+function renderPlatform(initialEntry = "/") {
+  return render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <Routes>
+        <Route path="/n/:id" element={<NotePlatform />} />
+        <Route path="*" element={<NotePlatform />} />
+      </Routes>
+    </MemoryRouter>,
+  );
 }
 
 async function openPicker() {
   await userEvent.setup().click(screen.getByRole("button", { name: "Notes" }));
 }
 
-describe("NotesApp", () => {
+describe("NotePlatform", () => {
   it("shows an empty state when there are no notes", async () => {
     vi.mocked(useNotesApi).mockReturnValue(fakeApi([]));
-    render(<Harness />);
+    renderPlatform();
 
     expect(await screen.findByText(/no notes yet/i)).toBeTruthy();
   });
 
   it("lists notes from the api in the picker", async () => {
     vi.mocked(useNotesApi).mockReturnValue(fakeApi([note("1", "Alpha")]));
-    render(<Harness />);
+    renderPlatform();
 
     await openPicker();
 
@@ -62,7 +68,7 @@ describe("NotesApp", () => {
     vi.mocked(useNotesApi).mockReturnValue(
       fakeApi([note("1", "Alpha", "hello body")]),
     );
-    render(<Harness />);
+    renderPlatform();
     const user = userEvent.setup();
 
     await user.click(screen.getByRole("button", { name: "Notes" }));
@@ -73,7 +79,7 @@ describe("NotesApp", () => {
 
   it("creates a note and shows it in the picker", async () => {
     vi.mocked(useNotesApi).mockReturnValue(fakeApi([]));
-    render(<Harness />);
+    renderPlatform();
     await screen.findByText(/no notes yet/i);
     const user = userEvent.setup();
 
@@ -85,7 +91,7 @@ describe("NotesApp", () => {
 
   it("clears the view after deleting the selected note", async () => {
     vi.mocked(useNotesApi).mockReturnValue(fakeApi([note("1", "Alpha", "hi")]));
-    render(<Harness />);
+    renderPlatform();
     const user = userEvent.setup();
 
     await user.click(await screen.findByRole("button", { name: "Notes" }));
