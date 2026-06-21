@@ -1,6 +1,12 @@
 * {
   box-sizing: border-box;
 }
+
+:root {
+  /* Keep these in sync with PALETTE in theme.ts */
+  --qn-bg-light: #faf9f7;
+  --qn-bg-dark: #1e1e1e;
+}
 body {
   margin: 0;
   font-family: 'Ysabeau Infant', sans-serif;
@@ -16,7 +22,7 @@ body {
   display: flex;
   height: 100vh;
   padding-left: var(--action-bar-w);
-  background: #faf9f7;
+  background: var(--qn-bg-light);
 }
 
 /* ── Action bar ───────────────────────────────────────────────── */
@@ -35,7 +41,7 @@ body {
 .action-bar button {
   width: 100%;
   padding: 20px 16px;
-  background: #faf9f7;
+  background: var(--qn-bg-light);
   border: 1px solid #d1d1d1;
   border-left: none;
   border-bottom: none;
@@ -235,7 +241,7 @@ main {
 /* ── Dark theme ───────────────────────────────────────────────── */
 
 .app[data-theme="dark"] {
-  background: #1e1e1e;
+  background: var(--qn-bg-dark);
   color: #e4e4e4;
 }
 

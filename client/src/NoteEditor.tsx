@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MarkdownEditor, type SaveStatus, type Theme } from 'md-live-editor/react';
 import type { Note } from '@notes/shared';
 import { updateNoteBody } from './notes-api';
+import { PALETTE } from './theme';
 
 const STATUS_LABEL: Record<SaveStatus, string> = {
   idle: '',
@@ -23,6 +24,7 @@ export const NoteEditor = ({ note, theme }: { note: Note; theme: Theme }) => {
         onSave={(content) => updateNoteBody(note.id, content).then(() => {})}
         onSaveStatus={setStatus}
         theme={theme}
+        bg={PALETTE}
       />
     </div>
   );
