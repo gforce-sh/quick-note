@@ -48,7 +48,7 @@ export const LoginScreen = ({ onSubmit }: LoginScreenProps) => {
   };
 
   return (
-    <main className="login">
+    <div className="login">
       <form aria-label="Enter passcode" onSubmit={(e) => e.preventDefault()}>
         {SLOTS.map((i) => (
           <input
@@ -67,6 +67,6 @@ export const LoginScreen = ({ onSubmit }: LoginScreenProps) => {
         ))}
       </form>
       {error && <p role="alert">{error}</p>}
-    </main>
+    </div>
   );
 };
