@@ -33,7 +33,7 @@ function buildNotesApi(initial: Note[] = []): NotesApi {
   };
 }
 
-afterEach(() => window.history.pushState({}, "", "/"));
+afterEach(() => window.history.pushState({}, "", "/quick-note"));
 
 describe("App auth guard", () => {
   it("shows the login screen when there is no session", async () => {
@@ -46,10 +46,11 @@ describe("App auth guard", () => {
     vi.mocked(useNotesApi).mockReturnValue(buildNotesApi());
     render(<App />);
 
-    expect(await screen.findAllByRole("textbox")).toHaveLength(4);
+    expect(await screen.findAllByLabelText(/Passcode digit \d/)).toHaveLength(4);
   });
 
   it("shows the notes app when a session exists", async () => {
+    window.history.pushState({}, "", "/quick-note");
     vi.mocked(useAuth).mockReturnValue({
       authed: true,
       handleLogin: vi.fn(),
@@ -62,11 +63,11 @@ describe("App auth guard", () => {
     expect(
       await screen.findByRole("button", { name: "New note" }),
     ).toBeTruthy();
-    expect(screen.queryAllByRole("textbox")).toHaveLength(0);
+    expect(screen.queryAllByLabelText(/Passcode digit \d/)).toHaveLength(0);
   });
 
   it("selects the note named in the URL", async () => {
-    window.history.pushState({}, "", "/n/1");
+    window.history.pushState({}, "", "/quick-note/n/1");
     vi.mocked(useAuth).mockReturnValue({
       authed: true,
       handleLogin: vi.fn(),

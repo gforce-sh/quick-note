@@ -37,6 +37,10 @@ function Harness() {
   return <NotesApp selectedId={sel} onSelect={setSel} />;
 }
 
+async function openPicker() {
+  await userEvent.setup().click(screen.getByRole("button", { name: "Notes" }));
+}
+
 describe("NotesApp", () => {
   it("shows an empty state when there are no notes", async () => {
     vi.mocked(useNotesApi).mockReturnValue(fakeApi([]));
@@ -45,30 +49,36 @@ describe("NotesApp", () => {
     expect(await screen.findByText(/no notes yet/i)).toBeTruthy();
   });
 
-  it("lists notes from the api", async () => {
+  it("lists notes from the api in the picker", async () => {
     vi.mocked(useNotesApi).mockReturnValue(fakeApi([note("1", "Alpha")]));
     render(<Harness />);
 
-    expect(await screen.findByText("Alpha")).toBeTruthy();
+    await openPicker();
+
+    expect(screen.getByText("Alpha")).toBeTruthy();
   });
 
-  it("shows a note's body when selected", async () => {
+  it("shows a note's body when selected from the picker", async () => {
     vi.mocked(useNotesApi).mockReturnValue(
       fakeApi([note("1", "Alpha", "hello body")]),
     );
     render(<Harness />);
+    const user = userEvent.setup();
 
-    await userEvent.setup().click(await screen.findByText("Alpha"));
+    await user.click(screen.getByRole("button", { name: "Notes" }));
+    await user.click(await screen.findByText("Alpha"));
 
     expect(await screen.findByText("hello body")).toBeTruthy();
   });
 
-  it("creates a note and lists it in the sidebar", async () => {
+  it("creates a note and shows it in the picker", async () => {
     vi.mocked(useNotesApi).mockReturnValue(fakeApi([]));
     render(<Harness />);
     await screen.findByText(/no notes yet/i);
+    const user = userEvent.setup();
 
-    await userEvent.setup().click(screen.getByRole("button", { name: "New note" }));
+    await user.click(screen.getByRole("button", { name: "New note" }));
+    await user.click(screen.getByRole("button", { name: "Notes" }));
 
     expect(await screen.findByText("New note 2026-06-06 00:00")).toBeTruthy();
   });
@@ -77,12 +87,15 @@ describe("NotesApp", () => {
     vi.mocked(useNotesApi).mockReturnValue(fakeApi([note("1", "Alpha", "hi")]));
     render(<Harness />);
     const user = userEvent.setup();
-    await user.click(await screen.findByText("Alpha"));
+
+    await user.click(await screen.findByRole("button", { name: "Notes" }));
+    await user.click(screen.getByText("Alpha"));
     await screen.findByText("hi");
 
+    await user.click(screen.getByRole("button", { name: "Notes" }));
     const del = screen.getByRole("button", { name: "Delete Alpha" });
-    await user.click(del); // arm
-    await user.click(del); // confirm
+    await user.click(del);
+    await user.click(del);
 
     expect(await screen.findByText(/no notes yet/i)).toBeTruthy();
   });

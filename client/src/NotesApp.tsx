@@ -1,10 +1,10 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import type { Note } from '@notes/shared';
-import { Sidebar } from './Sidebar';
-import { useNotesApi } from './useNotesApi';
 import type { NoteSummary } from '@notes/shared';
+import { ActionBar } from './ActionBar';
+import { NotePickerModal } from './NotePickerModal';
+import { useNotesApi } from './useNotesApi';
 
-// Code-split the CM6 editor so login/sidebar load without it.
 const NoteEditor = lazy(() =>
   import('./NoteEditor').then((m) => ({ default: m.NoteEditor })),
 );
@@ -17,9 +17,9 @@ export interface NotesAppProps {
 
 export const NotesApp = ({ selectedId, onSelect, onLogout }: NotesAppProps) => {
   const api = useNotesApi();
-
   const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [current, setCurrent] = useState<Note | null | undefined>(undefined);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     api.list().then(setNotes);
@@ -33,6 +33,22 @@ export const NotesApp = ({ selectedId, onSelect, onLogout }: NotesAppProps) => {
       setCurrent(null);
     }
   }, [selectedId]);
+
+  useEffect(() => {
+    let lastShift = 0;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Shift') return;
+      const now = Date.now();
+      if (now - lastShift < 300) {
+        setPickerOpen(true);
+        lastShift = 0;
+      } else {
+        lastShift = now;
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const handleNew = async () => {
     const created = await api.create();
@@ -51,14 +67,20 @@ export const NotesApp = ({ selectedId, onSelect, onLogout }: NotesAppProps) => {
 
   return (
     <div className="app">
-      <Sidebar
-        notes={notes}
-        selectedId={selectedId}
-        onSelect={onSelect}
+      <ActionBar
         onNew={handleNew}
-        onDelete={handleDelete}
+        onOpenPicker={() => setPickerOpen(true)}
         onLogout={onLogout}
       />
+      {pickerOpen && (
+        <NotePickerModal
+          notes={notes}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          onClose={() => setPickerOpen(false)}
+          onDelete={handleDelete}
+        />
+      )}
       {selectedId && current ? (
         <Suspense fallback={<p>Loading editor…</p>}>
           <NoteEditor note={current} />
