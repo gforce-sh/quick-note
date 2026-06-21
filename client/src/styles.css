@@ -16,6 +16,7 @@ body {
   display: flex;
   height: 100vh;
   padding-left: var(--action-bar-w);
+  background: #faf9f7;
 }
 
 /* ── Action bar ───────────────────────────────────────────────── */
@@ -34,7 +35,7 @@ body {
 .action-bar button {
   width: 100%;
   padding: 20px 16px;
-  background: #fff;
+  background: #faf9f7;
   border: 1px solid #d1d1d1;
   border-left: none;
   border-bottom: none;
@@ -59,11 +60,11 @@ body {
 }
 
 .action-bar button:hover {
-  background: #f5f5f5;
+  background: #f0efe9;
 }
 
 .action-bar button:active {
-  background: #ebebeb;
+  background: #e8e7e1;
 }
 
 /* ── Note picker modal ────────────────────────────────────────── */
@@ -229,4 +230,61 @@ main {
 .cm-content {
   font-family: 'Ysabeau Infant', sans-serif;
   font-optical-sizing: auto;
+}
+
+/* ── Dark theme ───────────────────────────────────────────────── */
+
+.app[data-theme="dark"] {
+  background: #1e1e1e;
+  color: #e4e4e4;
+}
+
+.app[data-theme="dark"] .action-bar button {
+  background: #2b2b2b;
+  border-color: #3a3a3a;
+  color: #e4e4e4;
+}
+
+.app[data-theme="dark"] .action-bar button:hover {
+  background: #333333;
+}
+
+.app[data-theme="dark"] .action-bar button:active {
+  background: #3d3d3d;
+}
+
+.app[data-theme="dark"] .note-picker {
+  background: #2b2b2b;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.app[data-theme="dark"] [cmdk-input] {
+  background: #2b2b2b;
+  border-bottom-color: #3a3a3a;
+  color: #e4e4e4;
+}
+
+.app[data-theme="dark"] [cmdk-item][aria-selected='true'] {
+  background: #333333;
+}
+
+.app[data-theme="dark"] [cmdk-item][data-current] {
+  background: #2f5278;
+}
+
+.app[data-theme="dark"] [cmdk-item] button {
+  border-color: #3a3a3a;
+  color: #999;
+}
+
+.app[data-theme="dark"] [cmdk-empty] {
+  color: #666;
+}
+
+.app[data-theme="dark"] .note-picker-title {
+  color: #e4e4e4;
+}
+
+.app[data-theme="dark"] .note-picker-date {
+  color: #666;
 }

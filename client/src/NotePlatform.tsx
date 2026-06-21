@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import type { Theme } from 'md-live-editor/react';
 import type { Note, NoteSummary } from '@notes/shared';
 import { ActionBar } from './ActionBar';
 import { NotePickerModal } from './NotePickerModal';
@@ -16,6 +17,7 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   const onSelect = (id: string | null) => navigate(id ? `/n/${id}` : '/');
 
   const api = useNotesApi();
+  const [theme, setTheme] = useState<Theme>('light');
   const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [current, setCurrent] = useState<Note | null | undefined>(undefined);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -65,10 +67,12 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   };
 
   return (
-    <div className="app">
+    <div className="app" data-theme={theme}>
       <ActionBar
         onNew={handleNew}
         onOpenPicker={() => setPickerOpen(true)}
+        theme={theme}
+        onToggleTheme={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}
         onLogout={onLogout}
       />
       {pickerOpen && (
@@ -82,7 +86,7 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
       )}
       {selectedId && current ? (
         <Suspense fallback={<p>Loading editor…</p>}>
-          <NoteEditor note={current} />
+          <NoteEditor note={current} theme={theme} />
         </Suspense>
       ) : (
         <p>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MarkdownEditor, type SaveStatus } from 'md-live-editor/react';
+import { MarkdownEditor, type SaveStatus, type Theme } from 'md-live-editor/react';
 import type { Note } from '@notes/shared';
 import { updateNoteBody } from './notes-api';
 
@@ -10,7 +10,7 @@ const STATUS_LABEL: Record<SaveStatus, string> = {
   error: "Couldn't save — retrying",
 };
 
-export const NoteEditor = ({ note }: { note: Note }) => {
+export const NoteEditor = ({ note, theme }: { note: Note; theme: Theme }) => {
   const [status, setStatus] = useState<SaveStatus>('idle');
 
   return (
@@ -22,7 +22,7 @@ export const NoteEditor = ({ note }: { note: Note }) => {
         initialContent={note.body}
         onSave={(content) => updateNoteBody(note.id, content).then(() => {})}
         onSaveStatus={setStatus}
-        theme="light"
+        theme={theme}
       />
     </div>
   );
