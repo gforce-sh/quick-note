@@ -6,23 +6,33 @@
   /* Keep these in sync with PALETTE in theme.ts */
   --qn-bg-light: #faf9f7;
   --qn-bg-dark: #1e1e1e;
+  --action-bar-w: 100px;
 }
+
 body {
   margin: 0;
   font-family: 'Ysabeau Infant', sans-serif;
   font-optical-sizing: auto;
   color: #1a1a1a;
+  background: var(--qn-bg-light);
+  height: 100vh;
 }
 
-:root {
-  --action-bar-w: 120px;
+.root {
+  height: 100%;
 }
 
 .app {
   display: flex;
-  height: 100vh;
+  height: 100%;
+  width: 100%;
   padding-left: var(--action-bar-w);
-  background: var(--qn-bg-light);
+}
+
+.app p {
+  flex: 1;
+  align-self: center;
+  text-align: center;
 }
 
 /* ── Action bar ───────────────────────────────────────────────── */
@@ -40,7 +50,7 @@ body {
 
 .action-bar button {
   width: 100%;
-  padding: 20px 16px;
+  padding: 1.3rem 0;
   background: var(--qn-bg-light);
   border: 1px solid #d1d1d1;
   border-left: none;
@@ -97,13 +107,23 @@ body {
 }
 
 @keyframes backdrop-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes picker-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 [cmdk-input] {
@@ -184,14 +204,6 @@ body {
 
 /* ── Editor area ──────────────────────────────────────────────── */
 
-main {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
 .note-editor {
   flex: 1;
   min-height: 0;
@@ -240,57 +252,57 @@ main {
 
 /* ── Dark theme ───────────────────────────────────────────────── */
 
-.app[data-theme="dark"] {
+.app[data-theme='dark'] {
   background: var(--qn-bg-dark);
   color: #e4e4e4;
 }
 
-.app[data-theme="dark"] .action-bar button {
+.app[data-theme='dark'] .action-bar button {
   background: #2b2b2b;
   border-color: #3a3a3a;
   color: #e4e4e4;
 }
 
-.app[data-theme="dark"] .action-bar button:hover {
+.app[data-theme='dark'] .action-bar button:hover {
   background: #333333;
 }
 
-.app[data-theme="dark"] .action-bar button:active {
+.app[data-theme='dark'] .action-bar button:active {
   background: #3d3d3d;
 }
 
-.app[data-theme="dark"] .note-picker {
+.app[data-theme='dark'] .note-picker {
   background: #2b2b2b;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
 }
 
-.app[data-theme="dark"] [cmdk-input] {
+.app[data-theme='dark'] [cmdk-input] {
   background: #2b2b2b;
   border-bottom-color: #3a3a3a;
   color: #e4e4e4;
 }
 
-.app[data-theme="dark"] [cmdk-item][aria-selected='true'] {
+.app[data-theme='dark'] [cmdk-item][aria-selected='true'] {
   background: #333333;
 }
 
-.app[data-theme="dark"] [cmdk-item][data-current] {
+.app[data-theme='dark'] [cmdk-item][data-current] {
   background: #2f5278;
 }
 
-.app[data-theme="dark"] [cmdk-item] button {
+.app[data-theme='dark'] [cmdk-item] button {
   border-color: #3a3a3a;
   color: #999;
 }
 
-.app[data-theme="dark"] [cmdk-empty] {
+.app[data-theme='dark'] [cmdk-empty] {
   color: #666;
 }
 
-.app[data-theme="dark"] .note-picker-title {
+.app[data-theme='dark'] .note-picker-title {
   color: #e4e4e4;
 }
 
-.app[data-theme="dark"] .note-picker-date {
+.app[data-theme='dark'] .note-picker-date {
   color: #666;
 }
