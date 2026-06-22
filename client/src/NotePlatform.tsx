@@ -27,6 +27,12 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   }, []);
 
   useEffect(() => {
+    if (pickerOpen) {
+      api.list().then(setNotes);
+    }
+  }, [pickerOpen]);
+
+  useEffect(() => {
     if (selectedId) {
       setCurrent(undefined);
       api.get(selectedId).then(setCurrent);
@@ -72,7 +78,9 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
         onNew={handleNew}
         onOpenPicker={() => setPickerOpen(true)}
         theme={theme}
-        onToggleTheme={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}
+        onToggleTheme={() =>
+          setTheme((t) => (t === 'light' ? 'dark' : 'light'))
+        }
         onLogout={onLogout}
       />
       {pickerOpen && (
