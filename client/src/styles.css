@@ -7,6 +7,7 @@
   --qn-bg-light: #faf9f7;
   --qn-bg-dark: #1e1e1e;
   --action-bar-w: 100px;
+  --action-bar-h: 60px;
 }
 
 body {
@@ -18,8 +19,10 @@ body {
   height: 100vh;
 }
 
-.root {
+#root {
   height: 100%;
+  container-type: inline-size;
+  container-name: root-node;
 }
 
 .app {
@@ -248,6 +251,55 @@ body {
 .cm-content {
   font-family: 'Ysabeau Infant', sans-serif;
   font-optical-sizing: auto;
+}
+
+/* ── Mobile layout (narrow container) ────────────────────────── */
+
+@container root-node (max-width: 736px) {
+  .app {
+    flex-direction: column;
+    padding-left: 0;
+    padding-bottom: var(--action-bar-h);
+  }
+
+  .action-bar {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    height: var(--action-bar-h);
+    flex-direction: row;
+  }
+
+  .action-bar button {
+    flex: 1;
+    padding: 0;
+    border: 1px solid #d1d1d1;
+    border-bottom: none;
+    border-right: none;
+    border-radius: 0;
+  }
+
+  .action-bar button:first-child {
+    border-left: none;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .action-bar button:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+  }
+
+  .note-editor {
+    padding-bottom: 0;
+  }
 }
 
 /* ── Dark theme ───────────────────────────────────────────────── */
