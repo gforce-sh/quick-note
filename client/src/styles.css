@@ -8,6 +8,10 @@
   --qn-bg-dark: #1e1e1e;
   --action-bar-w: 50px;
   --action-bar-h: 70px;
+  --action-bar-h-mobile: 40px;
+
+  --edge-spacing: 64px;
+  --edge-spacing-mobile: 8%;
 }
 
 html,
@@ -218,8 +222,7 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-left: 48px;
-  margin-right: 48px;
+  padding-left: var(--edge-spacing);
 }
 .note-editor-status {
   min-height: 1.4em;
@@ -260,13 +263,22 @@ body {
   font-optical-sizing: auto;
 }
 
+.cm-scroller {
+  padding-right: var(--edge-spacing);
+}
+
 /* ── Mobile layout (narrow container) ────────────────────────── */
 
 @container root-node (max-width: 736px) {
   .app {
     flex-direction: column;
     padding-left: 0;
-    padding-bottom: var(--action-bar-h);
+    padding-bottom: var(--action-bar-h-mobile);
+  }
+
+  .app > p {
+    display: flex;
+    align-items: center;
   }
 
   .action-bar {
@@ -276,7 +288,7 @@ body {
     right: 0;
     transform: none;
     width: 100%;
-    height: var(--action-bar-h);
+    height: var(--action-bar-h-mobile);
     flex-direction: row;
   }
 
@@ -302,6 +314,14 @@ body {
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
     border-top-left-radius: 0;
+  }
+
+  .note-editor {
+    padding-left: var(--edge-spacing-mobile);
+  }
+
+  .cm-scroller {
+    padding-right: var(--edge-spacing-mobile);
   }
 }
 
