@@ -22,16 +22,16 @@ export const ActionBar = ({
   onLogout,
 }: ActionBarProps) => (
   <div className="action-bar" role="toolbar" aria-label="Actions">
-    <button type="button" onClick={onNew}>
+    <button type="button" aria-label="New note" onClick={onNew}>
       <NewNoteIcon />
     </button>
-    <button type="button" onClick={onOpenPicker}>
+    <button type="button" aria-label="Notes" onClick={onOpenPicker}>
       <AppsIcon />
     </button>
-    <button type="button" onClick={onToggleTheme}>
+    <button type="button" aria-label={theme === 'light' ? 'Dark' : 'Light'} onClick={onToggleTheme}>
       <LightDarkIcon />
     </button>
-    <button type="button" onClick={() => onLogout?.()}>
+    <button type="button" aria-label="Log out" onClick={() => onLogout?.()}>
       <LogoutIcon />
     </button>
   </div>

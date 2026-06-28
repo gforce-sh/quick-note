@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
 import { login, logout } from "../src/api";
 
 function mockFetch(status: number, body: unknown = {}) {

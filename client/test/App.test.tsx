@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { App } from "../src/App";
 import { useAuth } from "../src/useAuth";
@@ -33,6 +32,7 @@ function buildNotesApi(initial: Note[] = []): NotesApi {
   };
 }
 
+beforeEach(() => window.history.pushState({}, "", "/quick-note"));
 afterEach(() => window.history.pushState({}, "", "/quick-note"));
 
 describe("App auth guard", () => {
