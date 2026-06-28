@@ -6,6 +6,8 @@ import { LoginScreen } from './LoginScreen';
 export const Routing = () => {
   const { handleLogin, handleLogout, authed } = useAuth();
 
+  if (authed === null) return <p>Authenticating...</p>;
+
   return (
     <BrowserRouter basename="/quick-note">
       <Routes>
