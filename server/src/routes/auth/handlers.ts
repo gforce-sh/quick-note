@@ -1,7 +1,11 @@
 import type { Context, MiddlewareHandler } from 'hono';
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import type { AppDeps } from '../../app';
-import { findUserByPasscode, getAuth } from '../../auth/auth-repo';
+import {
+  findUserByPasscode,
+  getAuth,
+  registerUser,
+} from '../../auth/auth-repo';
 import { createSessionToken, verifySessionToken } from '../../auth/token';
 
 const SESSION_COOKIE = 'session';
@@ -37,6 +41,35 @@ export function createAuthHandlers(deps: AppDeps) {
     const user = getAuth(db, userId);
     if (!user) return c.json({ error: 'not found' }, 404);
     return c.json({ name: user.name, role: user.role });
+  };
+
+  const setUser = async (c: Context) => {
+    const body = await c.req
+      .json<{ name?: string; passcode?: string; role?: string }>()
+      .catch(() => ({}) as { name?: string; passcode?: string; role?: string });
+    const name = typeof body.name === 'string' ? body.name.trim() : '';
+    const passcode = body.passcode;
+    const role = body.role;
+
+    if (name.length === 0 || typeof passcode !== 'string' || !/^\d{4}$/.test(passcode)) {
+      return c.json({ error: 'name and 4-digit passcode required' }, 400);
+    }
+    // 'o' (owner) and unknown roles are rejected at the boundary.
+    if (role !== undefined && role !== 'm' && role !== 'g' && role !== 'p') {
+      return c.json({ error: 'invalid role' }, 400);
+    }
+
+    const result = await registerUser(db, { name, passcode, role });
+    if (!result.ok) {
+      if (result.reason === 'owner-forbidden') {
+        return c.json({ error: 'forbidden' }, 403);
+      }
+      return c.json({ error: 'passcode not available, choose another' }, 409);
+    }
+    return c.json(
+      { id: result.user.id, name: result.user.name, role: result.user.role },
+      result.created ? 201 : 200,
+    );
   };
 
   const logout = (c: Context) => {
@@ -86,5 +119,5 @@ export function createAuthHandlers(deps: AppDeps) {
     return c.json({ ok: true });
   };
 
-  return { requireSession, health, session, me, logout, login };
+  return { requireSession, health, session, me, setUser, logout, login };
 }

@@ -7,7 +7,7 @@
     "build": "tsup",
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
-    "set-passcode": "tsx src/cli/set-passcode.ts",
+    "set-user": "tsx src/cli/set-user.ts",
     "backup": "tsx src/cli/backup.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
