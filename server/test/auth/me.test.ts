@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
-import { buildTestApp } from "../helpers/app";
+import { buildTestApp, TEST_USER_ID } from "../helpers/app";
 import { auth } from "../../src/db/schema";
 
 describe("GET /api/v1/me", () => {
@@ -25,13 +25,13 @@ describe("GET /api/v1/me", () => {
     const { db } = buildTestApp();
 
     expect(() =>
-      db.update(auth).set({ role: "x" as never }).where(eq(auth.id, 1)).run(),
+      db.update(auth).set({ role: "x" as never }).where(eq(auth.id, TEST_USER_ID)).run(),
     ).toThrow();
   });
 
   it("reflects the stored role", async () => {
     const { app, db, authCookie } = buildTestApp();
-    db.update(auth).set({ role: "o" }).where(eq(auth.id, 1)).run();
+    db.update(auth).set({ role: "o" }).where(eq(auth.id, TEST_USER_ID)).run();
 
     const res = await app.request("/api/v1/me", {
       headers: { cookie: authCookie() },

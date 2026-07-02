@@ -6,7 +6,7 @@ export interface SessionPayload {
   /** expiry, epoch ms */
   exp: number;
   /** auth user id */
-  userId: number;
+  userId: string;
 }
 
 function signBody(body: string, secret: string): string {
@@ -15,7 +15,7 @@ function signBody(body: string, secret: string): string {
 
 export function createSessionToken(
   secret: string,
-  opts: { ttlMs: number; now?: number; userId: number },
+  opts: { ttlMs: number; now?: number; userId: string },
 ): string {
   const now = opts.now ?? Date.now();
   const payload: SessionPayload = { iat: now, exp: now + opts.ttlMs, userId: opts.userId };
@@ -50,7 +50,7 @@ export function verifySessionToken(
     return null;
   }
   if (typeof payload.exp !== "number" || payload.exp <= now) return null;
-  if (typeof payload.userId !== "number") return null;
+  if (typeof payload.userId !== "string") return null;
 
   return payload;
 }

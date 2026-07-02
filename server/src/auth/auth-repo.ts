@@ -4,14 +4,14 @@ import { auth, type Role } from '../db/schema';
 import { hashPasscode, verifyPasscode } from './passcode';
 
 export interface AuthUser {
-  id: number;
+  id: string;
   name: string;
   role: Role;
   passcodeHash: string | null;
 }
 
 /** Read a single auth user by id, or null if not found. */
-export function getAuth(db: Db, userId: number): AuthUser | null {
+export function getAuth(db: Db, userId: string): AuthUser | null {
   const row = db.select().from(auth).where(eq(auth.id, userId)).get();
   if (!row) return null;
   return {
@@ -53,7 +53,7 @@ npm run set-passcode -- alice 1234
 npm run set-passcode -- bob 5678 */
 export async function setPasscode(
   db: Db,
-  userId: number,
+  userId: string,
   passcode: string,
 ): Promise<void> {
   const hash = await hashPasscode(passcode);

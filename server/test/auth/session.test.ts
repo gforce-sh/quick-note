@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import type { Hono } from "hono";
-import { buildTestApp } from "../helpers/app";
+import { buildTestApp, TEST_USER_ID } from "../helpers/app";
 import { setPasscode } from "../../src/auth/auth-repo";
 import type { Db } from "../../src/db";
 
 async function loginCookie(app: Hono, db: Db) {
-  await setPasscode(db, 1, "1234");
+  await setPasscode(db, TEST_USER_ID, "1234");
   const res = await app.request("/api/v1/login", {
     method: "POST",
     headers: { "content-type": "application/json" },

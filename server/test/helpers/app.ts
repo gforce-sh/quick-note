@@ -3,7 +3,7 @@ import { createDb } from "../../src/db";
 import { auth } from "../../src/db/schema";
 import { createSessionToken } from "../../src/auth/token";
 
-const TEST_USER_ID = 1;
+export const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 export function buildTestApp(overrides: Partial<AppConfig> = {}) {
   const db = createDb(":memory:");

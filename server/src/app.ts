@@ -4,7 +4,7 @@ import { createV1Router } from './routes';
 
 declare module 'hono' {
   interface ContextVariableMap {
-    userId: number;
+    userId: string;
   }
 }
 

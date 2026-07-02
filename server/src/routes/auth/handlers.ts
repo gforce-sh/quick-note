@@ -33,7 +33,7 @@ export function createAuthHandlers(deps: AppDeps) {
   const session = (c: Context) => c.json({ authenticated: true });
 
   const me = (c: Context) => {
-    const userId = c.get('userId') as number;
+    const userId = c.get('userId') as string;
     const user = getAuth(db, userId);
     if (!user) return c.json({ error: 'not found' }, 404);
     return c.json({ name: user.name, role: user.role });

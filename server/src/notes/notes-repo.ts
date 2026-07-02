@@ -24,7 +24,7 @@ const noteFields = {
   updatedAt: notes.updatedAt,
 };
 
-export function createNote(db: Db, opts: { now: number; userId: number }): Note {
+export function createNote(db: Db, opts: { now: number; userId: string }): Note {
   const note: Note = {
     id: randomUUID(),
     title: defaultTitle(opts.now),
@@ -36,7 +36,7 @@ export function createNote(db: Db, opts: { now: number; userId: number }): Note 
   return note;
 }
 
-export function listNotes(db: Db, userId: number): NoteSummary[] {
+export function listNotes(db: Db, userId: string): NoteSummary[] {
   return db
     .select({ id: notes.id, title: notes.title, updatedAt: notes.updatedAt })
     .from(notes)
@@ -45,7 +45,7 @@ export function listNotes(db: Db, userId: number): NoteSummary[] {
     .all();
 }
 
-export function getNote(db: Db, userId: number, id: string): Note | null {
+export function getNote(db: Db, userId: string, id: string): Note | null {
   return (
     db
       .select(noteFields)
@@ -57,7 +57,7 @@ export function getNote(db: Db, userId: number, id: string): Note | null {
 
 export function updateNoteBody(
   db: Db,
-  userId: number,
+  userId: string,
   id: string,
   body: string,
   opts: { now: number },
@@ -72,7 +72,7 @@ export function updateNoteBody(
   return getNote(db, userId, id);
 }
 
-export function deleteNote(db: Db, userId: number, id: string): boolean {
+export function deleteNote(db: Db, userId: string, id: string): boolean {
   return (
     db
       .delete(notes)
@@ -83,7 +83,7 @@ export function deleteNote(db: Db, userId: number, id: string): boolean {
 
 export function renameNote(
   db: Db,
-  userId: number,
+  userId: string,
   id: string,
   title: string,
   opts: { now: number },

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { sqliteTable, integer, text, check } from "drizzle-orm/sqlite-core";
 
@@ -7,7 +8,7 @@ export type Role = "o" | "m" | "g" | "p";
 export const auth = sqliteTable(
   "auth",
   {
-    id: integer("id").primaryKey(),
+    id: text("id").primaryKey().$defaultFn(() => randomUUID()),
     name: text("name").notNull(),
     role: text("role").$type<Role>().notNull().default("g"),
     passcodeHash: text("passcode_hash"),
@@ -17,7 +18,7 @@ export const auth = sqliteTable(
 
 export const notes = sqliteTable("notes", {
   id: text("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => auth.id),
+  userId: text("user_id").notNull().references(() => auth.id),
   title: text("title").notNull(),
   body: text("body").notNull().default(""),
   createdAt: integer("created_at").notNull(),

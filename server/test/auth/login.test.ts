@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import type { Hono } from "hono";
-import { buildTestApp } from "../helpers/app";
+import { buildTestApp, TEST_USER_ID } from "../helpers/app";
 import { setPasscode } from "../../src/auth/auth-repo";
 
 function login(app: Hono, passcode: string) {
@@ -14,7 +14,7 @@ function login(app: Hono, passcode: string) {
 describe("POST /api/v1/login", () => {
   it("accepts the correct passcode and sets a session cookie", async () => {
     const { app, db } = buildTestApp();
-    await setPasscode(db, 1, "1234");
+    await setPasscode(db, TEST_USER_ID, "1234");
 
     const res = await login(app, "1234");
 
@@ -27,7 +27,7 @@ describe("POST /api/v1/login", () => {
 
   it("rejects a wrong passcode", async () => {
     const { app, db } = buildTestApp();
-    await setPasscode(db, 1, "1234");
+    await setPasscode(db, TEST_USER_ID, "1234");
 
     const res = await login(app, "0000");
 
@@ -41,7 +41,7 @@ describe("login lockout", () => {
   it("locks login for an hour after 5 failed attempts", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { app, db, setNow } = buildTestApp();
-    await setPasscode(db, 1, "1234");
+    await setPasscode(db, TEST_USER_ID, "1234");
     setNow(0);
 
     for (let i = 0; i < 5; i++) {
@@ -56,7 +56,7 @@ describe("login lockout", () => {
 
   it("unlocks once the hour has passed", async () => {
     const { app, db, setNow } = buildTestApp();
-    await setPasscode(db, 1, "1234");
+    await setPasscode(db, TEST_USER_ID, "1234");
     setNow(0);
     for (let i = 0; i < 5; i++) await login(app, "0000");
 
