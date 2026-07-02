@@ -3,13 +3,14 @@ import type { AppDeps } from '../../app';
 import { createAuthHandlers } from './handlers';
 
 export function createAuthRouter(deps: AppDeps) {
-  const { requireSession, health, session, logout, login } =
+  const { requireSession, health, session, me, logout, login } =
     createAuthHandlers(deps);
 
   const router = new Hono();
 
   router.get('/health', health);
   router.get('/session', requireSession, session);
+  router.get('/me', requireSession, me);
   router.post('/login', login);
   router.post('/logout', logout);
 

@@ -1,7 +1,7 @@
 import type { Context, MiddlewareHandler } from 'hono';
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie';
 import type { AppDeps } from '../../app';
-import { findUserByPasscode } from '../../auth/auth-repo';
+import { findUserByPasscode, getAuth } from '../../auth/auth-repo';
 import { createSessionToken, verifySessionToken } from '../../auth/token';
 
 const SESSION_COOKIE = 'session';
@@ -31,6 +31,13 @@ export function createAuthHandlers(deps: AppDeps) {
   const health = (c: Context) => c.json({ status: 'ok' });
 
   const session = (c: Context) => c.json({ authenticated: true });
+
+  const me = (c: Context) => {
+    const userId = c.get('userId') as number;
+    const user = getAuth(db, userId);
+    if (!user) return c.json({ error: 'not found' }, 404);
+    return c.json({ name: user.name, role: user.role });
+  };
 
   const logout = (c: Context) => {
     deleteCookie(c, SESSION_COOKIE, { path: '/' });
@@ -79,5 +86,5 @@ export function createAuthHandlers(deps: AppDeps) {
     return c.json({ ok: true });
   };
 
-  return { requireSession, health, session, logout, login };
+  return { requireSession, health, session, me, logout, login };
 }

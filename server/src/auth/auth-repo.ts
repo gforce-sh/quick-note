@@ -1,11 +1,12 @@
 import { eq } from 'drizzle-orm';
 import type { Db } from '../db';
-import { auth } from '../db/schema';
+import { auth, type Role } from '../db/schema';
 import { hashPasscode, verifyPasscode } from './passcode';
 
 export interface AuthUser {
   id: number;
   name: string;
+  role: Role;
   passcodeHash: string | null;
 }
 
@@ -13,7 +14,12 @@ export interface AuthUser {
 export function getAuth(db: Db, userId: number): AuthUser | null {
   const row = db.select().from(auth).where(eq(auth.id, userId)).get();
   if (!row) return null;
-  return { id: row.id, name: row.name, passcodeHash: row.passcodeHash };
+  return {
+    id: row.id,
+    name: row.name,
+    role: row.role,
+    passcodeHash: row.passcodeHash,
+  };
 }
 
 /**
@@ -30,7 +36,12 @@ export async function findUserByPasscode(
       row.passcodeHash &&
       (await verifyPasscode(row.passcodeHash, passcode))
     ) {
-      return { id: row.id, name: row.name, passcodeHash: row.passcodeHash };
+      return {
+        id: row.id,
+        name: row.name,
+        role: row.role,
+        passcodeHash: row.passcodeHash,
+      };
     }
   }
   return null;

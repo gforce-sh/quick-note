@@ -16,6 +16,7 @@ export function migrate(sqlite: DatabaseSync): void {
       CREATE TABLE auth_new (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL DEFAULT 'default',
+        role TEXT NOT NULL DEFAULT 'g' CHECK (role IN ('o', 'm', 'g', 'p')),
         passcode_hash TEXT
       );
       INSERT INTO auth_new (id, passcode_hash) SELECT id, passcode_hash FROM auth;
@@ -50,6 +51,7 @@ export function migrate(sqlite: DatabaseSync): void {
     CREATE TABLE IF NOT EXISTS auth (
       id INTEGER PRIMARY KEY,
       name TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'g' CHECK (role IN ('o', 'm', 'g', 'p')),
       passcode_hash TEXT
     );
 
