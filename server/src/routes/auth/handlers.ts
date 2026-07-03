@@ -40,7 +40,7 @@ export function createAuthHandlers(deps: AppDeps) {
     const userId = c.get('userId') as string;
     const user = getAuth(db, userId);
     if (!user) return c.json({ error: 'not found' }, 404);
-    return c.json({ name: user.name, role: user.role });
+    return c.json({ name: user.name, xr: user.role });
   };
 
   const setUser = async (c: Context) => {
