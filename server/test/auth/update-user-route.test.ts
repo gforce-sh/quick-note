@@ -41,14 +41,6 @@ describe("PATCH /api/v1/me", () => {
     expect(owner?.id).toBe(TEST_USER_ID);
   });
 
-  it("can also change the caller's role", async () => {
-    const { app, authCookie } = buildTestApp();
-
-    const res = await patchMe(app, authCookie(), { passcode: "4321", role: "m" });
-
-    expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ role: "m" });
-  });
 
   it("rejects re-using the caller's own current passcode with a generic 400", async () => {
     const { app, authCookie } = buildTestApp();
@@ -73,14 +65,6 @@ describe("PATCH /api/v1/me", () => {
     db.update(auth).set({ role: "o" }).where(eq(auth.id, TEST_USER_ID)).run();
 
     const res = await patchMe(app, authCookie(), { passcode: "4321" });
-
-    expect(res.status).toBe(400);
-  });
-
-  it("rejects assigning the owner role with 400", async () => {
-    const { app, authCookie } = buildTestApp();
-
-    const res = await patchMe(app, authCookie(), { passcode: "4321", role: "o" });
 
     expect(res.status).toBe(400);
   });

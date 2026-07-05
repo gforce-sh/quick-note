@@ -99,8 +99,8 @@ export function createAuthHandlers(deps: AppDeps) {
     );
   };
 
-  // PATCH /me — the authenticated user changes their own passcode (and,
-  // optionally, role). Target comes from the session, never from the body.
+  // PATCH /me — the authenticated user changes their own passcode. Role is not
+  // settable here; the target comes from the session, never from the body.
   // Responses are limited to 200 / 400 / 401 (plus 429 when locked): any
   // rejection returns a generic 400 so the endpoint can't be used to probe
   // which passcodes exist, and the shared lockout caps how many probes are
@@ -111,20 +111,15 @@ export function createAuthHandlers(deps: AppDeps) {
 
     const userId = c.get('userId') as string;
     const body = await c.req
-      .json<{ passcode?: string; role?: string }>()
-      .catch(() => ({}) as { passcode?: string; role?: string });
+      .json<{ passcode?: string }>()
+      .catch(() => ({}) as { passcode?: string });
     const passcode = body.passcode;
-    const role = body.role;
 
     if (typeof passcode !== 'string' || !/^\d{4}$/.test(passcode)) {
       return c.json({ error: '4-digit passcode required' }, 400);
     }
-    // 'o' (owner) and unknown roles are rejected at the boundary.
-    if (role !== undefined && role !== 'm' && role !== 'g' && role !== 'p') {
-      return c.json({ error: 'invalid role' }, 400);
-    }
 
-    const result = await updateUser(db, userId, { passcode, role });
+    const result = await updateUser(db, userId, { passcode });
     if (!result.ok) {
       // A well-formed passcode that's already taken is a brute-force guess;
       // count it toward the lockout. The reason is inspected only internally —
