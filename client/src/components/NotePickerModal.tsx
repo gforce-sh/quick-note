@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Command } from 'cmdk';
 import type { NoteSummary } from '@notes/shared';
+import styles from './NotePickerModal.module.css';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -47,9 +48,9 @@ export const NotePickerModal = ({
   };
 
   return (
-    <div className="note-picker-backdrop" onClick={onClose}>
+    <div className={styles.backdrop} onClick={onClose}>
       <div
-        className="note-picker"
+        className={styles.panel}
         role="dialog"
         aria-label="Select note"
         onClick={(e) => e.stopPropagation()}
@@ -65,8 +66,8 @@ export const NotePickerModal = ({
                 onSelect={() => handleSelect(note.id)}
                 data-current={selectedId === note.id || undefined}
               >
-                <span className="note-picker-title">{note.title}</span>
-                <span className="note-picker-date">{formatNoteDate(note.updatedAt)}</span>
+                <span className={styles.title}>{note.title}</span>
+                <span className={styles.date}>{formatNoteDate(note.updatedAt)}</span>
                 <button
                   type="button"
                   aria-label={`Delete ${note.title}`}

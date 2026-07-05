@@ -4,7 +4,7 @@ import {
   createNote,
   deleteNote,
   updateNoteBody,
-} from "../src/notes-api";
+} from "../src/api/notes-api";
 
 function res(status: number, body: unknown = {}) {
   return new Response(JSON.stringify(body), {

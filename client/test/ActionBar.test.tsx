@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { ActionBar } from "../src/ActionBar";
+import { ActionBar } from "../src/components/ActionBar";
 
 const defaults = {
   onNew: vi.fn(),

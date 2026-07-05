@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import { NotePlatform } from "../src/NotePlatform";
-import { useNotesApi } from "../src/useNotesApi";
-import type { NotesApi } from "../src/useNotesApi";
+import { NotePlatform } from "../src/components/NotePlatform";
+import { useNotesApi } from "../src/hooks/useNotesApi";
+import type { NotesApi } from "../src/hooks/useNotesApi";
 import type { Note, NoteSummary } from "@notes/shared";
 
-vi.mock("../src/useNotesApi");
+vi.mock("../src/hooks/useNotesApi");
 
 function note(id: string, title: string, body = ""): Note {
   return { id, title, body, titleIsCustom: false, createdAt: 0, updatedAt: 1 };

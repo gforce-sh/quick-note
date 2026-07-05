@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { NotePickerModal, formatNoteDate } from "../src/NotePickerModal";
+import { NotePickerModal, formatNoteDate } from "../src/components/NotePickerModal";
 import type { NoteSummary } from "@notes/shared";
 
 const notes: NoteSummary[] = [

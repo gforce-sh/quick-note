@@ -1,4 +1,4 @@
-import { listNotes, getNote, createNote, deleteNote } from './notes-api';
+import { listNotes, getNote, createNote, deleteNote } from '../api/notes-api';
 import type { Note, NoteSummary } from '@notes/shared';
 
 export interface NotesApi {

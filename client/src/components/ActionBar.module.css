@@ -1,0 +1,98 @@
+.actionBar {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  width: var(--action-bar-w);
+  z-index: 10;
+}
+
+.actionBar button {
+  width: 100%;
+  padding: 1.3rem 0;
+  background: var(--qn-bg-light);
+  border: 1px solid #d1d1d1;
+  border-left: none;
+  border-bottom: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-family: inherit;
+  color: #1a1a1a;
+  text-align: center;
+  transition: background 0.1s;
+}
+
+.actionBar button:last-child {
+  border-bottom: 1px solid #d1d1d1;
+}
+
+.actionBar button:first-child {
+  border-top-right-radius: 8px;
+}
+
+.actionBar button:last-child {
+  border-bottom-right-radius: 8px;
+}
+
+.actionBar button:hover {
+  background: #f0efe9;
+}
+
+.actionBar button:active {
+  background: #e8e7e1;
+}
+
+@container root-node (max-width: 736px) {
+  .actionBar {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    height: var(--action-bar-h-mobile);
+    flex-direction: row;
+  }
+
+  .actionBar button {
+    flex: 1;
+    padding: 0;
+    border: 1px solid #d1d1d1;
+    border-bottom: none;
+    border-right: none;
+    border-radius: 0;
+  }
+
+  .actionBar button:first-child {
+    border-left: none;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .actionBar button:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+  }
+}
+
+/* Dark theme — data-theme lives on the ancestor .app; match the attribute
+   directly so it resolves across the module boundary. */
+[data-theme='dark'] .actionBar button {
+  background: #2b2b2b;
+  border-color: #3a3a3a;
+  color: #e4e4e4;
+}
+
+[data-theme='dark'] .actionBar button:hover {
+  background: #333333;
+}
+
+[data-theme='dark'] .actionBar button:active {
+  background: #3d3d3d;
+}

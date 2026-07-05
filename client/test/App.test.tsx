@@ -1,13 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { App } from "../src/App";
-import { useAuth } from "../src/useAuth";
-import { useNotesApi } from "../src/useNotesApi";
-import type { NotesApi } from "../src/useNotesApi";
+import { useAuth } from "../src/hooks/useAuth";
+import { useNotesApi } from "../src/hooks/useNotesApi";
+import type { NotesApi } from "../src/hooks/useNotesApi";
 import type { Note } from "@notes/shared";
 
-vi.mock("../src/useAuth");
-vi.mock("../src/useNotesApi");
-vi.mock("../src/NoteEditor", () => ({
+vi.mock("../src/hooks/useAuth");
+vi.mock("../src/hooks/useNotesApi");
+vi.mock("../src/components/NoteEditor", () => ({
   NoteEditor: ({ note }: { note: Note }) => <pre>{note.body}</pre>,
 }));
 

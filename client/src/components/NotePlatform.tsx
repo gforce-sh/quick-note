@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import type { Note, NoteSummary } from '@notes/shared';
 import { ActionBar } from './ActionBar';
 import { NotePickerModal } from './NotePickerModal';
-import { useNotesApi } from './useNotesApi';
-import { useTheme } from './useTheme';
+import { useNotesApi } from '../hooks/useNotesApi';
+import { useTheme } from '../hooks/useTheme';
+import styles from './NotePlatform.module.css';
 
 const NoteEditor = lazy(() =>
   import('./NoteEditor').then((m) => ({ default: m.NoteEditor })),
@@ -73,7 +74,7 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   };
 
   return (
-    <div className="app" data-theme={theme}>
+    <div className={styles.app} data-theme={theme}>
       <ActionBar
         onNew={handleNew}
         onOpenPicker={() => setPickerOpen(true)}

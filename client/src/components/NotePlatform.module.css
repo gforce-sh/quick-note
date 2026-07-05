@@ -1,0 +1,31 @@
+.app {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  padding-left: var(--action-bar-w);
+}
+
+.app p {
+  flex: 1;
+  align-self: center;
+  text-align: center;
+}
+
+@container root-node (max-width: 736px) {
+  .app {
+    flex-direction: column;
+    padding-left: 0;
+    padding-bottom: var(--action-bar-h-mobile);
+  }
+
+  .app > p {
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* Dark theme — data-theme is set on this same .app element. */
+.app[data-theme='dark'] {
+  background: var(--qn-bg-dark);
+  color: #e4e4e4;
+}

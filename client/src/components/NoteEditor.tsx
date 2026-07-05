@@ -6,8 +6,9 @@ import {
   type Theme,
 } from 'md-live-editor/react';
 import type { Note } from '@notes/shared';
-import { updateNoteBody } from './notes-api';
-import { PALETTE } from './theme';
+import { updateNoteBody } from '../api/notes-api';
+import { PALETTE } from '../theme';
+import styles from './NoteEditor.module.css';
 
 const STATUS_LABEL: Record<SaveStatus, string> = {
   idle: '',
@@ -31,8 +32,8 @@ export const NoteEditor = ({ note, theme }: { note: Note; theme: Theme }) => {
     status === 'saved' && savedAt ? `Saved on ${formatTime(savedAt)}` : STATUS_LABEL[status];
 
   return (
-    <div className="note-editor">
-      <div className="note-editor-status" role="status" aria-live="polite">
+    <div className={styles.editor}>
+      <div className={styles.status} role="status" aria-live="polite">
         {statusLabel}
       </div>
       <MarkdownEditor

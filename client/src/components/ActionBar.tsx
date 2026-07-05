@@ -5,6 +5,7 @@ import {
   LightDark as LightDarkIcon,
   Logout as LogoutIcon,
 } from './icons/Icons';
+import styles from './ActionBar.module.css';
 
 export interface ActionBarProps {
   onNew: () => void;
@@ -21,7 +22,7 @@ export const ActionBar = ({
   onToggleTheme,
   onLogout,
 }: ActionBarProps) => (
-  <div className="action-bar" role="toolbar" aria-label="Actions">
+  <div className={styles.actionBar} role="toolbar" aria-label="Actions">
     <button type="button" aria-label="New note" onClick={onNew}>
       <NewNoteIcon />
     </button>

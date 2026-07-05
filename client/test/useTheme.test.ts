@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { useTheme } from "../src/useTheme";
+import { useTheme } from "../src/hooks/useTheme";
 
 beforeEach(() => localStorage.clear());
 

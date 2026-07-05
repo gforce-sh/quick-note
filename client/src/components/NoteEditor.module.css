@@ -1,0 +1,34 @@
+.editor {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  font-size: 0.85em;
+  color: #888;
+}
+
+/* CodeMirror internals are rendered by md-live-editor, so these overrides
+   target its global classes rather than module-scoped ones. */
+:global(.cm-content) {
+  font-family: 'Ysabeau Infant', sans-serif;
+  font-optical-sizing: auto;
+}
+
+:global(.cm-scroller) {
+  padding-left: var(--edge-spacing);
+  padding-right: var(--edge-spacing);
+}
+
+@container root-node (max-width: 736px) {
+  :global(.cm-scroller) {
+    padding-left: var(--edge-spacing-mobile);
+    padding-right: var(--edge-spacing-mobile);
+  }
+}

@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Routing } from './Routing';
+import { Routing } from './components/Routing';
 
 export const App = () => {
   return (

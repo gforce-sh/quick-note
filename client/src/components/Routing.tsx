@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { NotePlatform } from './NotePlatform';
-import { useAuth } from './useAuth';
+import { useAuth } from '../hooks/useAuth';
 import { LoginScreen } from './LoginScreen';
 
 export const Routing = () => {

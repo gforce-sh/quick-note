@@ -1,0 +1,39 @@
+/* Global stylesheet: resets, design tokens, and root layout only.
+   Component-specific styles live in each component's *.module.css. */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Keep these in sync with PALETTE in theme.ts */
+  --qn-bg-light: #faf9f7;
+  --qn-bg-dark: #1e1e1e;
+  --action-bar-w: 50px;
+  --action-bar-h: 70px;
+  --action-bar-h-mobile: 40px;
+
+  --edge-spacing: 20%;
+  --edge-spacing-mobile: 8%;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  min-height: 100dvh;
+  margin: 0;
+  font-family: 'Ysabeau Infant', sans-serif;
+  font-optical-sizing: auto;
+  color: #1a1a1a;
+  background: var(--qn-bg-light);
+}
+
+#root {
+  height: 100%;
+  container-type: inline-size;
+  container-name: root-node;
+}

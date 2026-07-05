@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import type { LoginResult } from './api';
-import { useTheme } from './useTheme';
+import type { LoginResult } from '../api/auth-api';
+import { useTheme } from '../hooks/useTheme';
+import styles from './LoginScreen.module.css';
 
 export interface LoginScreenProps {
   onSubmit: (passcode: string) => Promise<LoginResult>;
@@ -50,7 +51,7 @@ export const LoginScreen = ({ onSubmit }: LoginScreenProps) => {
   };
 
   return (
-    <div className="login" data-theme={theme}>
+    <div className={styles.login} data-theme={theme}>
       <form aria-label="Enter passcode" onSubmit={(e) => e.preventDefault()}>
         {SLOTS.map((i) => (
           <input

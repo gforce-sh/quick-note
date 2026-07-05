@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import "md-live-editor/styles.css";
-import "./styles.css";
+import "./styles/global.css";
 import { App } from "./App";
 
 const root = document.getElementById("root");
