@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import type { Note, NoteSummary } from '@notes/shared';
 import { ActionBar } from './ActionBar';
 import { NotePickerModal } from './NotePickerModal';
-import { useNotesApi } from '../hooks/useNotesApi';
+import { listNotes, getNote, createNote, deleteNote } from '../api/notes-api';
 import { useTheme } from '../hooks/useTheme';
 import styles from './NotePlatform.module.css';
 
@@ -17,26 +17,25 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   const navigate = useNavigate();
   const onSelect = (id: string | null) => navigate(id ? `/n/${id}` : '/');
 
-  const api = useNotesApi();
   const { theme, toggleTheme } = useTheme();
   const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [current, setCurrent] = useState<Note | null | undefined>(undefined);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
-    api.list().then(setNotes);
+    listNotes().then(setNotes);
   }, []);
 
   useEffect(() => {
     if (pickerOpen) {
-      api.list().then(setNotes);
+      listNotes().then(setNotes);
     }
   }, [pickerOpen]);
 
   useEffect(() => {
     if (selectedId) {
       setCurrent(undefined);
-      api.get(selectedId).then(setCurrent);
+      getNote(selectedId).then(setCurrent);
     } else {
       setCurrent(null);
     }
@@ -59,7 +58,7 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   }, []);
 
   const handleNew = async () => {
-    const created = await api.create();
+    const created = await createNote();
     setNotes((prev) => [
       { id: created.id, title: created.title, updatedAt: created.updatedAt },
       ...prev,
@@ -68,7 +67,7 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   };
 
   const handleDelete = async (id: string) => {
-    await api.remove(id);
+    await deleteNote(id);
     setNotes((prev) => prev.filter((n) => n.id !== id));
     if (selectedId === id) onSelect(null);
   };

@@ -1,12 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { App } from "../src/App";
 import { useAuth } from "../src/hooks/useAuth";
-import { useNotesApi } from "../src/hooks/useNotesApi";
-import type { NotesApi } from "../src/hooks/useNotesApi";
+import * as notesApi from "../src/api/notes-api";
 import type { Note } from "@notes/shared";
 
 vi.mock("../src/hooks/useAuth");
-vi.mock("../src/hooks/useNotesApi");
+vi.mock("../src/api/notes-api");
 vi.mock("../src/components/NoteEditor", () => ({
   NoteEditor: ({ note }: { note: Note }) => <pre>{note.body}</pre>,
 }));
@@ -15,21 +14,24 @@ function note(id: string, title: string, body = ""): Note {
   return { id, title, body, createdAt: 0, updatedAt: 1 };
 }
 
-function buildNotesApi(initial: Note[] = []): NotesApi {
+// Wires the mocked notes-api to an in-memory store so create/delete are
+// reflected by subsequent list/get calls, matching the real backend.
+function mockNotesApi(initial: Note[] = []) {
   let notes = [...initial];
-  return {
-    list: async () =>
-      notes.map((n) => ({ id: n.id, title: n.title, updatedAt: n.updatedAt })),
-    get: async (id) => notes.find((n) => n.id === id) ?? null,
-    create: async () => {
-      const created = note("new", "New");
-      notes = [created, ...notes];
-      return created;
-    },
-    remove: async (id) => {
-      notes = notes.filter((n) => n.id !== id);
-    },
-  };
+  vi.mocked(notesApi.listNotes).mockImplementation(async () =>
+    notes.map((n) => ({ id: n.id, title: n.title, updatedAt: n.updatedAt })),
+  );
+  vi.mocked(notesApi.getNote).mockImplementation(
+    async (id) => notes.find((n) => n.id === id) ?? null,
+  );
+  vi.mocked(notesApi.createNote).mockImplementation(async () => {
+    const created = note("new", "New");
+    notes = [created, ...notes];
+    return created;
+  });
+  vi.mocked(notesApi.deleteNote).mockImplementation(async (id) => {
+    notes = notes.filter((n) => n.id !== id);
+  });
 }
 
 beforeEach(() => window.history.pushState({}, "", "/quick-note"));
@@ -43,7 +45,7 @@ describe("App auth guard", () => {
       handleLogout: vi.fn(),
       setAuthed: vi.fn(),
     });
-    vi.mocked(useNotesApi).mockReturnValue(buildNotesApi());
+    mockNotesApi();
     render(<App />);
 
     expect(await screen.findAllByLabelText(/Passcode digit \d/)).toHaveLength(4);
@@ -57,7 +59,7 @@ describe("App auth guard", () => {
       handleLogout: vi.fn(),
       setAuthed: vi.fn(),
     });
-    vi.mocked(useNotesApi).mockReturnValue(buildNotesApi());
+    mockNotesApi();
     render(<App />);
 
     expect(
@@ -74,9 +76,7 @@ describe("App auth guard", () => {
       handleLogout: vi.fn(),
       setAuthed: vi.fn(),
     });
-    vi.mocked(useNotesApi).mockReturnValue(
-      buildNotesApi([note("1", "Alpha", "url body")]),
-    );
+    mockNotesApi([note("1", "Alpha", "url body")]);
     render(<App />);
 
     expect(await screen.findByText("url body")).toBeTruthy();

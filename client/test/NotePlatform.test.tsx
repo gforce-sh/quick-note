@@ -2,33 +2,33 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { NotePlatform } from "../src/components/NotePlatform";
-import { useNotesApi } from "../src/hooks/useNotesApi";
-import type { NotesApi } from "../src/hooks/useNotesApi";
-import type { Note, NoteSummary } from "@notes/shared";
+import * as notesApi from "../src/api/notes-api";
+import type { Note } from "@notes/shared";
 
-vi.mock("../src/hooks/useNotesApi");
+vi.mock("../src/api/notes-api");
 
 function note(id: string, title: string, body = ""): Note {
   return { id, title, body, createdAt: 0, updatedAt: 1 };
 }
 
-function fakeApi(initial: Note[] = []): NotesApi {
+// Wires the mocked notes-api to an in-memory store so create/delete are
+// reflected by subsequent list/get calls, matching the real backend.
+function mockNotesApi(initial: Note[] = []) {
   let notes = [...initial];
-  return {
-    list: vi.fn(
-      async (): Promise<NoteSummary[]> =>
-        notes.map((n) => ({ id: n.id, title: n.title, updatedAt: n.updatedAt })),
-    ),
-    get: vi.fn(async (id: string) => notes.find((n) => n.id === id) ?? null),
-    create: vi.fn(async () => {
-      const created = note("new-1", "New note 2026-06-06 00:00");
-      notes = [created, ...notes];
-      return created;
-    }),
-    remove: vi.fn(async (id: string) => {
-      notes = notes.filter((n) => n.id !== id);
-    }),
-  };
+  vi.mocked(notesApi.listNotes).mockImplementation(async () =>
+    notes.map((n) => ({ id: n.id, title: n.title, updatedAt: n.updatedAt })),
+  );
+  vi.mocked(notesApi.getNote).mockImplementation(
+    async (id) => notes.find((n) => n.id === id) ?? null,
+  );
+  vi.mocked(notesApi.createNote).mockImplementation(async () => {
+    const created = note("new-1", "New note 2026-06-06 00:00");
+    notes = [created, ...notes];
+    return created;
+  });
+  vi.mocked(notesApi.deleteNote).mockImplementation(async (id) => {
+    notes = notes.filter((n) => n.id !== id);
+  });
 }
 
 function renderPlatform(initialEntry = "/") {
@@ -48,14 +48,14 @@ async function openPicker() {
 
 describe("NotePlatform", () => {
   it("shows an empty state when there are no notes", async () => {
-    vi.mocked(useNotesApi).mockReturnValue(fakeApi([]));
+    mockNotesApi([]);
     renderPlatform();
 
     expect(await screen.findByText(/no notes yet/i)).toBeTruthy();
   });
 
   it("lists notes from the api in the picker", async () => {
-    vi.mocked(useNotesApi).mockReturnValue(fakeApi([note("1", "Alpha")]));
+    mockNotesApi([note("1", "Alpha")]);
     renderPlatform();
 
     await openPicker();
@@ -64,9 +64,7 @@ describe("NotePlatform", () => {
   });
 
   it("shows a note's body when selected from the picker", async () => {
-    vi.mocked(useNotesApi).mockReturnValue(
-      fakeApi([note("1", "Alpha", "hello body")]),
-    );
+    mockNotesApi([note("1", "Alpha", "hello body")]);
     renderPlatform();
     const user = userEvent.setup();
 
@@ -77,7 +75,7 @@ describe("NotePlatform", () => {
   });
 
   it("creates a note and shows it in the picker", async () => {
-    vi.mocked(useNotesApi).mockReturnValue(fakeApi([]));
+    mockNotesApi([]);
     renderPlatform();
     await screen.findByText(/no notes yet/i);
     const user = userEvent.setup();
@@ -89,7 +87,7 @@ describe("NotePlatform", () => {
   });
 
   it("clears the view after deleting the selected note", async () => {
-    vi.mocked(useNotesApi).mockReturnValue(fakeApi([note("1", "Alpha", "hi")]));
+    mockNotesApi([note("1", "Alpha", "hi")]);
     renderPlatform();
     const user = userEvent.setup();
 
