@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import type { Db } from './db';
+import type { Notifier, TelegramConfig } from './notify/telegram';
 import { createV1Router } from './routes';
 
 declare module 'hono' {
@@ -14,6 +15,8 @@ export interface AppConfig {
   sessionTtlMs: number;
   /** Set the Secure flag on the session cookie (off in dev over http). */
   secureCookies: boolean;
+  /** Telegram bot for lockout alerts; omitted when the bot isn't configured. */
+  telegram?: TelegramConfig;
 }
 
 export interface AppDeps {
@@ -21,6 +24,8 @@ export interface AppDeps {
   config: AppConfig;
   /** Injectable clock; defaults to Date.now. Lets tests control time. */
   now?: () => number;
+  /** Injectable lockout notifier; defaults to a Telegram sender from config. */
+  notify?: Notifier;
 }
 
 export function createApp(deps: AppDeps) {

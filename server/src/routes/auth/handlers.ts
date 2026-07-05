@@ -8,6 +8,7 @@ import {
   updateUser,
 } from '../../auth/auth-repo';
 import { createSessionToken, verifySessionToken } from '../../auth/token';
+import { createTelegramNotifier } from '../../notify/telegram';
 
 const SESSION_COOKIE = 'session';
 const MAX_FAILED_ATTEMPTS = 5;
@@ -16,6 +17,7 @@ const LOCKOUT_MS = 60 * 60 * 1000;
 export function createAuthHandlers(deps: AppDeps) {
   const { db, config } = deps;
   const now = deps.now ?? Date.now;
+  const notify = deps.notify ?? createTelegramNotifier(config.telegram);
 
   // Global in-memory lockout, shared across login and the passcode-mutation
   // endpoints (set-user, PATCH /me). Global rather than per-user because
@@ -35,12 +37,20 @@ export function createAuthHandlers(deps: AppDeps) {
   };
 
   // Count a failed passcode guess and engage the lock once the threshold is hit.
-  const recordFailedGuess = (ts: number): void => {
+  // `source` names the endpoint that triggered this guess so the alert can report
+  // which one tipped the system into lockout.
+  const recordFailedGuess = (ts: number, source: string): void => {
     failedAttempts++;
     if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
       lockedUntil = ts + LOCKOUT_MS;
+      const until = new Date(lockedUntil).toISOString();
       console.warn(
-        `[auth] locked until ${new Date(lockedUntil).toISOString()} after ${failedAttempts} failed attempts`,
+        `[auth] locked until ${until} after ${failedAttempts} failed attempts (last: ${source})`,
+      );
+      // Fire once, only as the lock first engages — subsequent blocked requests
+      // are short-circuited by isLocked() and never reach here.
+      notify(
+        `🔒 quick-note locked after ${failedAttempts} failed passcode attempts (last from ${source}). Locked until ${until}.`,
       );
     }
   };
@@ -90,7 +100,7 @@ export function createAuthHandlers(deps: AppDeps) {
         return c.json({ error: 'forbidden' }, 403);
       }
       // A well-formed passcode that's already taken is a brute-force guess.
-      recordFailedGuess(now());
+      recordFailedGuess(now(), 'set-user');
       return c.json({ error: 'passcode not available, choose another' }, 409);
     }
     return c.json(
@@ -126,7 +136,7 @@ export function createAuthHandlers(deps: AppDeps) {
       // every failure still collapses to a generic 400 so the response never
       // reveals whether the passcode is in use or the account is the owner.
       if (result.reason === 'passcode-taken') {
-        recordFailedGuess(ts);
+        recordFailedGuess(ts, 'patch-me');
       }
       return c.json({ error: 'invalid request' }, 400);
     }
@@ -153,7 +163,7 @@ export function createAuthHandlers(deps: AppDeps) {
       passcode !== undefined ? await findUserByPasscode(db, passcode) : null;
 
     if (!user) {
-      recordFailedGuess(ts);
+      recordFailedGuess(ts, 'login');
       return c.json({ error: 'invalid passcode' }, 401);
     }
 

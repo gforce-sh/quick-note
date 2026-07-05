@@ -5,7 +5,10 @@ import { createSessionToken } from "../../src/auth/token";
 
 export const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
 
-export function buildTestApp(overrides: Partial<AppConfig> = {}) {
+export function buildTestApp(
+  overrides: Partial<AppConfig> = {},
+  deps: { notify?: (text: string) => void } = {},
+) {
   const db = createDb(":memory:");
   db.insert(auth).values({ id: TEST_USER_ID, name: "test" }).run();
 
@@ -17,7 +20,7 @@ export function buildTestApp(overrides: Partial<AppConfig> = {}) {
   };
 
   let current = 0;
-  const app = createApp({ db, config, now: () => current });
+  const app = createApp({ db, config, now: () => current, notify: deps.notify });
 
   return {
     app,

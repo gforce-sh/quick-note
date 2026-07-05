@@ -9,10 +9,14 @@ export function loadConfig(): AppConfig {
   if (isProd && !sessionSecret) {
     throw new Error("SESSION_SECRET must be set in production");
   }
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
   return {
     sessionSecret: sessionSecret ?? "dev-insecure-secret",
     sessionTtlMs: SEVEN_DAYS_MS,
     secureCookies: isProd,
+    // Only wire up the notifier when both halves are present.
+    telegram: botToken && chatId ? { botToken, chatId } : undefined,
   };
 }
 

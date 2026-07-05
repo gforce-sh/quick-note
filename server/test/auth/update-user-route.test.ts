@@ -120,6 +120,23 @@ describe("PATCH /api/v1/me lockout", () => {
     warn.mockRestore();
   });
 
+  it("notifies once when the lock first engages", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const notify = vi.fn();
+    const { app, authCookie } = buildTestApp({}, { notify });
+    await setUser(app, { name: "bob", passcode: "1234" });
+
+    // Trip the lock, then keep hammering while already locked.
+    for (let i = 0; i < 7; i++) {
+      await patchMe(app, authCookie(), { passcode: "1234" });
+    }
+
+    // Exactly one alert, sent as the lock engaged — not per blocked request.
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(notify).toHaveBeenCalledWith(expect.stringMatching(/locked/i));
+    warn.mockRestore();
+  });
+
   it("shares the lockout with login and set-user", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { app, db, authCookie } = buildTestApp();
