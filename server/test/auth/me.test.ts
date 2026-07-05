@@ -18,7 +18,7 @@ describe("GET /api/v1/me", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ name: "test", role: "g" });
+    expect(await res.json()).toEqual({ name: "test", xr: "g" });
   });
 
   it("rejects an invalid role at the DB layer", async () => {
@@ -37,6 +37,6 @@ describe("GET /api/v1/me", () => {
       headers: { cookie: authCookie() },
     });
 
-    expect(await res.json()).toEqual({ name: "test", role: "o" });
+    expect(await res.json()).toEqual({ name: "test", xr: "o" });
   });
 });

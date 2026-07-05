@@ -9,6 +9,7 @@ import {
 } from '../../auth/auth-repo';
 import { createSessionToken, verifySessionToken } from '../../auth/token';
 import { createTelegramNotifier } from '../../notify/telegram';
+import { version } from '../../../package.json';
 
 const SESSION_COOKIE = 'session';
 const MAX_FAILED_ATTEMPTS = 5;
@@ -65,7 +66,7 @@ export function createAuthHandlers(deps: AppDeps) {
     await next();
   };
 
-  const health = (c: Context) => c.json({ status: 'ok' });
+  const health = (c: Context) => c.json({ status: 'ok', version });
 
   const session = (c: Context) => c.json({ authenticated: true });
 
