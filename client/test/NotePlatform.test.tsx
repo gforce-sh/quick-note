@@ -9,7 +9,7 @@ import type { Note, NoteSummary } from "@notes/shared";
 vi.mock("../src/hooks/useNotesApi");
 
 function note(id: string, title: string, body = ""): Note {
-  return { id, title, body, titleIsCustom: false, createdAt: 0, updatedAt: 1 };
+  return { id, title, body, createdAt: 0, updatedAt: 1 };
 }
 
 function fakeApi(initial: Note[] = []): NotesApi {
