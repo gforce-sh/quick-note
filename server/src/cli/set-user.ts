@@ -36,9 +36,6 @@ if (!result.ok) {
   process.exit(1);
 }
 
-if (result.created) {
-  console.log(
-    `Created user "${name}" (id ${result.user.id}, role ${result.user.role}).`,
-  );
-}
-console.log(`Passcode set for "${name}" (${dbPath}).`);
+console.log(
+  `Created user "${name}" (id ${result.user.id}, role ${result.user.role}) in ${dbPath}.`,
+);

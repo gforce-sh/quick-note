@@ -5,6 +5,7 @@ import {
   findUserByPasscode,
   getAuth,
   registerUser,
+  updateUser,
 } from '../../auth/auth-repo';
 import { createSessionToken, verifySessionToken } from '../../auth/token';
 
@@ -16,11 +17,33 @@ export function createAuthHandlers(deps: AppDeps) {
   const { db, config } = deps;
   const now = deps.now ?? Date.now;
 
-  // Global in-memory lockout — resets on server restart, tracks failed
-  // login attempts across all users since passcode-only login cannot attribute
-  // a failed guess to a specific user.
+  // Global in-memory lockout, shared across login and the passcode-mutation
+  // endpoints (set-user, PATCH /me). Global rather than per-user because
+  // passcode-only auth cannot attribute a failed guess to a specific user, and
+  // shared across endpoints so an attacker cannot dodge the lock by switching
+  // between them. Resets on server restart.
   let failedAttempts = 0;
   let lockedUntil: number | null = null;
+
+  // True while locked; clears an expired lock as a side effect.
+  const isLocked = (ts: number): boolean => {
+    if (lockedUntil !== null && lockedUntil <= ts) {
+      failedAttempts = 0;
+      lockedUntil = null;
+    }
+    return lockedUntil !== null;
+  };
+
+  // Count a failed passcode guess and engage the lock once the threshold is hit.
+  const recordFailedGuess = (ts: number): void => {
+    failedAttempts++;
+    if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
+      lockedUntil = ts + LOCKOUT_MS;
+      console.warn(
+        `[auth] locked until ${new Date(lockedUntil).toISOString()} after ${failedAttempts} failed attempts`,
+      );
+    }
+  };
 
   const requireSession: MiddlewareHandler = async (c, next) => {
     const token = getCookie(c, SESSION_COOKIE);
@@ -44,6 +67,8 @@ export function createAuthHandlers(deps: AppDeps) {
   };
 
   const setUser = async (c: Context) => {
+    if (isLocked(now())) return c.json({ error: 'locked' }, 429);
+
     const body = await c.req
       .json<{ name?: string; passcode?: string; role?: string }>()
       .catch(() => ({}) as { name?: string; passcode?: string; role?: string });
@@ -64,12 +89,57 @@ export function createAuthHandlers(deps: AppDeps) {
       if (result.reason === 'owner-forbidden') {
         return c.json({ error: 'forbidden' }, 403);
       }
+      // A well-formed passcode that's already taken is a brute-force guess.
+      recordFailedGuess(now());
       return c.json({ error: 'passcode not available, choose another' }, 409);
     }
     return c.json(
       { id: result.user.id, name: result.user.name, role: result.user.role },
-      result.created ? 201 : 200,
+      201,
     );
+  };
+
+  // PATCH /me — the authenticated user changes their own passcode (and,
+  // optionally, role). Target comes from the session, never from the body.
+  // Responses are limited to 200 / 400 / 401 (plus 429 when locked): any
+  // rejection returns a generic 400 so the endpoint can't be used to probe
+  // which passcodes exist, and the shared lockout caps how many probes are
+  // possible before the system locks.
+  const patchUser = async (c: Context) => {
+    const ts = now();
+    if (isLocked(ts)) return c.json({ error: 'locked' }, 429);
+
+    const userId = c.get('userId') as string;
+    const body = await c.req
+      .json<{ passcode?: string; role?: string }>()
+      .catch(() => ({}) as { passcode?: string; role?: string });
+    const passcode = body.passcode;
+    const role = body.role;
+
+    if (typeof passcode !== 'string' || !/^\d{4}$/.test(passcode)) {
+      return c.json({ error: '4-digit passcode required' }, 400);
+    }
+    // 'o' (owner) and unknown roles are rejected at the boundary.
+    if (role !== undefined && role !== 'm' && role !== 'g' && role !== 'p') {
+      return c.json({ error: 'invalid role' }, 400);
+    }
+
+    const result = await updateUser(db, userId, { passcode, role });
+    if (!result.ok) {
+      // A well-formed passcode that's already taken is a brute-force guess;
+      // count it toward the lockout. The reason is inspected only internally —
+      // every failure still collapses to a generic 400 so the response never
+      // reveals whether the passcode is in use or the account is the owner.
+      if (result.reason === 'passcode-taken') {
+        recordFailedGuess(ts);
+      }
+      return c.json({ error: 'invalid request' }, 400);
+    }
+    return c.json({
+      id: result.user.id,
+      name: result.user.name,
+      role: result.user.role,
+    });
   };
 
   const logout = (c: Context) => {
@@ -80,11 +150,7 @@ export function createAuthHandlers(deps: AppDeps) {
   const login = async (c: Context) => {
     const ts = now();
 
-    if (lockedUntil !== null && lockedUntil <= ts) {
-      failedAttempts = 0;
-      lockedUntil = null;
-    }
-    if (lockedUntil !== null) return c.json({ error: 'locked' }, 429);
+    if (isLocked(ts)) return c.json({ error: 'locked' }, 429);
 
     const body = await c.req.json<{ passcode?: string }>().catch(() => ({}));
     const passcode = (body as { passcode?: string }).passcode;
@@ -92,16 +158,13 @@ export function createAuthHandlers(deps: AppDeps) {
       passcode !== undefined ? await findUserByPasscode(db, passcode) : null;
 
     if (!user) {
-      failedAttempts++;
-      if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
-        lockedUntil = ts + LOCKOUT_MS;
-        console.warn(
-          `[auth] login locked until ${new Date(lockedUntil).toISOString()} after ${failedAttempts} failed attempts`,
-        );
-      }
+      recordFailedGuess(ts);
       return c.json({ error: 'invalid passcode' }, 401);
     }
 
+    // A correct passcode is proof of legitimacy, so it clears the counter.
+    // Mutation-endpoint successes deliberately do NOT, since an authenticated
+    // caller can manufacture those at will.
     failedAttempts = 0;
     lockedUntil = null;
     const token = createSessionToken(config.sessionSecret, {
@@ -119,5 +182,14 @@ export function createAuthHandlers(deps: AppDeps) {
     return c.json({ ok: true });
   };
 
-  return { requireSession, health, session, me, setUser, logout, login };
+  return {
+    requireSession,
+    health,
+    session,
+    me,
+    setUser,
+    patchUser,
+    logout,
+    login,
+  };
 }

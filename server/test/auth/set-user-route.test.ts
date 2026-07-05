@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { buildTestApp } from "../helpers/app";
@@ -31,14 +31,19 @@ describe("POST /api/v1/set-user", () => {
     expect(await res.json()).toMatchObject({ role: "m" });
   });
 
-  it("updates an existing user's passcode and role and returns 200", async () => {
-    const { app } = buildTestApp();
-    await setUser(app, { name: "alice", passcode: "1234" });
+  it("creates a distinct account when the same name is reused", async () => {
+    const { app, db } = buildTestApp();
+    const first = (await (await setUser(app, { name: "alice", passcode: "1234" })).json()) as {
+      id: string;
+    };
 
-    const res = await setUser(app, { name: "alice", passcode: "4321", role: "p" });
+    const res = await setUser(app, { name: "alice", passcode: "4321" });
 
-    expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ role: "p" });
+    expect(res.status).toBe(201);
+    const second = (await res.json()) as { id: string };
+    expect(second.id).not.toBe(first.id);
+    const alices = db.select().from(auth).where(eq(auth.name, "alice")).all();
+    expect(alices).toHaveLength(2);
   });
 
   it("rejects a passcode already owned by another user", async () => {
@@ -60,21 +65,26 @@ describe("POST /api/v1/set-user", () => {
     expect(res.status).toBe(400);
   });
 
-  it("refuses to modify an existing owner account with 403", async () => {
-    const { app, db } = buildTestApp();
-    await setUser(app, { name: "owner", passcode: "1234" });
-    db.update(auth).set({ role: "o" }).where(eq(auth.name, "owner")).run();
-
-    const res = await setUser(app, { name: "owner", passcode: "4321" });
-
-    expect(res.status).toBe(403);
-  });
-
   it("rejects a malformed passcode with 400", async () => {
     const { app } = buildTestApp();
 
     const res = await setUser(app, { name: "alice", passcode: "12" });
 
     expect(res.status).toBe(400);
+  });
+
+  it("locks with 429 after repeated taken-passcode attempts", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { app } = buildTestApp();
+    await setUser(app, { name: "alice", passcode: "1234" });
+
+    for (let i = 0; i < 5; i++) {
+      expect((await setUser(app, { name: "x", passcode: "1234" })).status).toBe(409);
+    }
+
+    // Locked — a fresh, available passcode is refused with 429, not created.
+    expect((await setUser(app, { name: "y", passcode: "5678" })).status).toBe(429);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

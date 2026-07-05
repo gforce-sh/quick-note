@@ -30,12 +30,6 @@ export function getAuth(db: Db, userId: string): AuthUser | null {
   return row ? toAuthUser(row) : null;
 }
 
-/** Read a single auth user by name, or null if not found. */
-export function getAuthByName(db: Db, name: string): AuthUser | null {
-  const row = db.select().from(auth).where(eq(auth.name, name)).get();
-  return row ? toAuthUser(row) : null;
-}
-
 /**
  * Find the auth user whose passcode hash matches the given passcode.
  * Returns null if no user matches.
@@ -66,25 +60,27 @@ export async function setPasscode(
   db.update(auth).set({ passcodeHash: hash }).where(eq(auth.id, userId)).run();
 }
 
-/** Roles assignable through registerUser; owner ('o') is excluded. */
+/** Roles assignable through registerUser/updateUser; owner ('o') is excluded. */
 export type AssignableRole = Exclude<Role, 'o'>;
 
 export interface RegisterUserInput {
   name: string;
   passcode: string;
-  /** Defaults to 'g' on creation; leaves the role unchanged on update. */
+  /** Defaults to 'g' when omitted. */
   role?: AssignableRole;
 }
 
 export type RegisterUserResult =
-  | { ok: true; user: AuthUser; created: boolean }
+  | { ok: true; user: AuthUser }
   | { ok: false; reason: 'passcode-taken' | 'owner-forbidden' };
 
 /**
- * Create the named user (or reuse the existing one) and set its passcode and
- * role. A passcode may belong to at most one user: if another user already
- * owns it, fails with `passcode-taken` and nothing is written. Owner accounts
- * (role 'o') can neither be assigned nor modified here (`owner-forbidden`).
+ * Create a new user with the given passcode and role. Names are not unique —
+ * the passcode is a user's identity, so this always creates a fresh account
+ * and never reuses one by name. If the passcode already belongs to someone,
+ * fails with `passcode-taken` and nothing is written. Owner accounts (role
+ * 'o') cannot be created here (`owner-forbidden`). Updating an existing user's
+ * passcode is a separate flow — see `updateUser`.
  *
  * Seeding workflow:
  *   npm run set-user -- alice 1234
@@ -94,34 +90,69 @@ export async function registerUser(
   db: Db,
   { name, passcode, role }: RegisterUserInput,
 ): Promise<RegisterUserResult> {
-  const target = getAuthByName(db, name);
-
-  // Owners are off-limits: neither an existing owner nor a request for 'o'.
-  if (target?.role === 'o' || (role as Role | undefined) === 'o') {
+  // Owner accounts cannot be minted through this path.
+  if ((role as Role | undefined) === 'o') {
     return { ok: false, reason: 'owner-forbidden' };
   }
 
-  // Passcode uniqueness is the primary guard. A match against the same user we
-  // are about to update is fine (re-setting their own passcode).
+  // A passcode identifies exactly one user, so it must be unused.
   const passcodeOwner = await findUserByPasscode(db, passcode);
-  if (passcodeOwner && passcodeOwner.id !== target?.id) {
+  if (passcodeOwner) {
     return { ok: false, reason: 'passcode-taken' };
   }
 
+  const rows = db
+    .insert(auth)
+    .values(role ? { name, role } : { name })
+    .returning()
+    .all();
+  const user = toAuthUser(rows[0]!);
+  await setPasscode(db, user.id, passcode);
+  return { ok: true, user };
+}
+
+export interface UpdateUserInput {
+  passcode: string;
+  /** Leaves the role unchanged when omitted. */
+  role?: AssignableRole;
+}
+
+export type UpdateUserResult =
+  | { ok: true; user: AuthUser }
+  | { ok: false; reason: 'passcode-taken' | 'owner-forbidden' | 'not-found' };
+
+/**
+ * Update an existing user (identified by id) with a new passcode and,
+ * optionally, a new role. The new passcode must be unused by anyone — a passcode
+ * already in circulation is rejected with `passcode-taken`, including the user's
+ * own current passcode. Owner accounts (role 'o') can neither be modified nor
+ * assigned (`owner-forbidden`). Returns `not-found` when no user has the given id.
+ */
+export async function updateUser(
+  db: Db,
+  userId: string,
+  { passcode, role }: UpdateUserInput,
+): Promise<UpdateUserResult> {
+  const target = getAuth(db, userId);
   if (!target) {
-    const rows = db
-      .insert(auth)
-      .values(role ? { name, role } : { name })
-      .returning()
-      .all();
-    const user = toAuthUser(rows[0]!);
-    await setPasscode(db, user.id, passcode);
-    return { ok: true, user, created: true };
+    return { ok: false, reason: 'not-found' };
+  }
+
+  // Owners are off-limits: neither the existing account nor a request for 'o'.
+  if (target.role === 'o' || (role as Role | undefined) === 'o') {
+    return { ok: false, reason: 'owner-forbidden' };
+  }
+
+  // Passcode uniqueness is the primary guard. Any passcode already in use is
+  // rejected — a user cannot even re-set their own current passcode.
+  const passcodeOwner = await findUserByPasscode(db, passcode);
+  if (passcodeOwner) {
+    return { ok: false, reason: 'passcode-taken' };
   }
 
   if (role && role !== target.role) {
     db.update(auth).set({ role }).where(eq(auth.id, target.id)).run();
   }
   await setPasscode(db, target.id, passcode);
-  return { ok: true, user: getAuth(db, target.id)!, created: false };
+  return { ok: true, user: getAuth(db, target.id)! };
 }
