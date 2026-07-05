@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { LoginResult } from './api';
+import { useTheme } from './useTheme';
 
 export interface LoginScreenProps {
   onSubmit: (passcode: string) => Promise<LoginResult>;
@@ -8,6 +9,7 @@ export interface LoginScreenProps {
 const SLOTS = [0, 1, 2, 3];
 
 export const LoginScreen = ({ onSubmit }: LoginScreenProps) => {
+  const { theme } = useTheme();
   const [digits, setDigits] = useState(['', '', '', '']);
   const [error, setError] = useState<string | null>(null);
   const inputsRef = useRef<(HTMLInputElement | null)[]>([
@@ -48,7 +50,7 @@ export const LoginScreen = ({ onSubmit }: LoginScreenProps) => {
   };
 
   return (
-    <div className="login">
+    <div className="login" data-theme={theme}>
       <form aria-label="Enter passcode" onSubmit={(e) => e.preventDefault()}>
         {SLOTS.map((i) => (
           <input

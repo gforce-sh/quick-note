@@ -382,3 +382,14 @@ body {
 .app[data-theme='dark'] .note-picker-date {
   color: #666;
 }
+
+.login[data-theme='dark'] {
+  background: var(--qn-bg-dark);
+  color: #e4e4e4;
+}
+
+.login[data-theme='dark'] input {
+  background: #2b2b2b;
+  border: 1px solid #3a3a3a;
+  color: #e4e4e4;
+}
