@@ -225,11 +225,12 @@ body {
 }
 
 .note-editor-status {
-  min-height: 1.4em;
-  padding: 10px 10px 4px 0;
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
   font-size: 0.85em;
   color: #888;
-  text-align: right;
 }
 
 /* ── Login ────────────────────────────────────────────────────── */
