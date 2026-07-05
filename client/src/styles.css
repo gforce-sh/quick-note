@@ -10,7 +10,7 @@
   --action-bar-h: 70px;
   --action-bar-h-mobile: 40px;
 
-  --edge-spacing: 64px;
+  --edge-spacing: 20%;
   --edge-spacing-mobile: 8%;
 }
 
@@ -222,11 +222,11 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-left: var(--edge-spacing);
 }
+
 .note-editor-status {
   min-height: 1.4em;
-  padding-bottom: 4px;
+  padding: 10px 10px 4px 0;
   font-size: 0.85em;
   color: #888;
   text-align: right;
@@ -242,10 +242,12 @@ body {
   height: 100%;
   gap: 12px;
 }
+
 .login form {
   display: flex;
   gap: 8px;
 }
+
 .login input {
   width: 48px;
   height: 56px;
@@ -264,6 +266,7 @@ body {
 }
 
 .cm-scroller {
+  padding-left: var(--edge-spacing);
   padding-right: var(--edge-spacing);
 }
 
@@ -316,11 +319,8 @@ body {
     border-top-left-radius: 0;
   }
 
-  .note-editor {
-    padding-left: var(--edge-spacing-mobile);
-  }
-
   .cm-scroller {
+    padding-left: var(--edge-spacing-mobile);
     padding-right: var(--edge-spacing-mobile);
   }
 }
