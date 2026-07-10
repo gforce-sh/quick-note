@@ -70,6 +70,7 @@ export const LoginScreen = ({ onSubmit }: LoginScreenProps) => {
         ))}
       </form>
       {error && <p role="alert">{error}</p>}
+      <div className={styles.appVersion}>{import.meta.env.PACKAGE_VERSION}</div>
     </div>
   );
 };
