@@ -33,12 +33,12 @@ describe("notes-api", () => {
     await expect(getNote("missing")).resolves.toBeNull();
   });
 
-  it("creates a note via POST", async () => {
+  it("creates a note via POST with body", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       res(201, {
         id: "n1",
         title: "New",
-        body: "",
+        body: "# New note",
         titleIsCustom: false,
         createdAt: 1,
         updatedAt: 1,
@@ -46,12 +46,15 @@ describe("notes-api", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const note = await createNote();
+    const note = await createNote({ body: "# New note" });
 
     expect(note.id).toBe("n1");
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/v1/notes",
-      expect.objectContaining({ method: "POST" }),
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ body: "# New note" }),
+      }),
     );
   });
 

@@ -15,9 +15,13 @@ export async function getNote(id: string): Promise<Note | null> {
   return res.json();
 }
 
-/** Create a new, empty Note. */
-export async function createNote(): Promise<Note> {
-  const res = await fetch("/api/v1/notes", { method: "POST" });
+/** Create a new note from body content. */
+export async function createNote(opts: { body: string }): Promise<Note> {
+  const res = await fetch("/api/v1/notes", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ body: opts.body }),
+  });
   if (!res.ok) throw new Error(`create note failed: ${res.status}`);
   return res.json();
 }

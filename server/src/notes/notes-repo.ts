@@ -24,11 +24,11 @@ const noteFields = {
   updatedAt: notes.updatedAt,
 };
 
-export function createNote(db: Db, opts: { now: number; userId: string }): Note {
+export function createNote(db: Db, opts: { now: number; userId: string; body: string }): Note {
   const note: Note = {
     id: randomUUID(),
-    title: defaultTitle(opts.now),
-    body: "",
+    title: deriveTitle(opts.body) ?? defaultTitle(opts.now),
+    body: opts.body,
     createdAt: opts.now,
     updatedAt: opts.now,
   };

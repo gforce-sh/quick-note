@@ -4,7 +4,11 @@ import { buildTestApp } from "../helpers/app";
 
 async function createNote(app: Hono, cookie: string) {
   return (
-    await app.request("/api/v1/notes", { method: "POST", headers: { cookie } })
+    await app.request("/api/v1/notes", {
+      method: "POST",
+      headers: { cookie, "content-type": "application/json" },
+      body: JSON.stringify({ body: "Note content" }),
+    })
   ).json();
 }
 

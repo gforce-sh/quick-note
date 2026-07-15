@@ -5,7 +5,8 @@ import { buildTestApp } from "../helpers/app";
 async function createNote(app: Hono, cookie: string) {
   const res = await app.request("/api/v1/notes", {
     method: "POST",
-    headers: { cookie },
+    headers: { cookie, "content-type": "application/json" },
+    body: JSON.stringify({ body: "Note content" }),
   });
   return res.json();
 }
@@ -45,7 +46,7 @@ describe("GET /api/v1/notes/:id", () => {
     });
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ id: created.id, body: "" });
+    expect(await res.json()).toMatchObject({ id: created.id, body: "Note content" });
   });
 
   it("404s for a missing note", async () => {

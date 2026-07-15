@@ -13,8 +13,15 @@ export function createNotesHandlers(deps: AppDeps) {
   const { db } = deps;
   const now = deps.now ?? Date.now;
 
-  const create = (c: Context) => {
-    const note = createNote(db, { now: now(), userId: c.get('userId') });
+  const create = async (c: Context) => {
+    const userId = c.get('userId') as string;
+    const { body } = await c.req
+      .json<{ body?: string }>()
+      .catch(() => ({}) as { body?: string });
+    if (typeof body !== 'string' || body.length === 0) {
+      return c.json({ error: 'body is required and cannot be empty' }, 400);
+    }
+    const note = createNote(db, { now: now(), userId, body });
     return c.json(note, 201);
   };
 
