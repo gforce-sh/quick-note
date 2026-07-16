@@ -1,9 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import { NotePlatform } from "../src/components/NotePlatform";
-import * as notesApi from "../src/api/notes-api";
 import type { Note } from "@notes/shared";
+import * as notesApi from "../src/api/notes-api";
+import { NotePlatform } from "../src/components/NotePlatform";
 
 vi.mock("../src/api/notes-api");
 
@@ -21,8 +21,9 @@ function mockNotesApi(initial: Note[] = []) {
   vi.mocked(notesApi.getNote).mockImplementation(
     async (id) => notes.find((n) => n.id === id) ?? null,
   );
-  vi.mocked(notesApi.createNote).mockImplementation(async () => {
-    const created = note("new-1", "New note 2026-06-06 00:00");
+  vi.mocked(notesApi.createNote).mockImplementation(async ({ body }) => {
+    const title = body.startsWith("# ") ? "New note 2026-06-06 00:00" : body.split("\n")[0];
+    const created = note("new-1", title ?? "New note 2026-06-06 00:00", body);
     notes = [created, ...notes];
     return created;
   });
@@ -35,6 +36,7 @@ function renderPlatform(initialEntry = "/") {
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
+        <Route path="/n/new" element={<NotePlatform />} />
         <Route path="/n/:id" element={<NotePlatform />} />
         <Route path="*" element={<NotePlatform />} />
       </Routes>
@@ -74,16 +76,34 @@ describe("NotePlatform", () => {
     expect(await screen.findByText("hello body")).toBeTruthy();
   });
 
-  it("creates a note and shows it in the picker", async () => {
+  it("creates a draft and saves it to the server", async () => {
     mockNotesApi([]);
-    renderPlatform();
-    await screen.findByText(/no notes yet/i);
+    // Directly render the /n/new route — tests the draft editor without relying on navigation
+    renderPlatform("/n/new");
+
+    // The real md-live-editor renders a contenteditable div (role="textbox"), not a textarea.
+    // Its initial content is set via innerText (e.g., "# " for drafts).
+    const editor = await screen.findByRole("textbox");
+    expect(editor.textContent).toMatch(/^#/);
+
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole("button", { name: "New note" }));
-    await user.click(screen.getByRole("button", { name: "Notes" }));
+    // Type content using keyboard events — works on contenteditable without clipboard API
+    await user.keyboard("Hello world");
 
-    expect(await screen.findByText("New note 2026-06-06 00:00")).toBeTruthy();
+    // md-live-editor debounces at 2000ms (default). Wait for autosave to fire.
+    // Using a generous timeout since this is a real-time debounce.
+    await waitFor(
+      () => {
+        expect(notesApi.createNote).toHaveBeenCalled();
+      },
+      { timeout: 5000 },
+    );
+
+    // createNote should have been called with body containing typed text
+    expect(notesApi.createNote).toHaveBeenCalledWith(
+      expect.objectContaining({ body: expect.stringContaining("Hello world") }),
+    );
   });
 
   it("clears the view after deleting the selected note", async () => {

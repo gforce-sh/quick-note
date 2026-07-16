@@ -1,11 +1,19 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, lazy, Suspense, useCallback } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { Note, NoteSummary } from '@notes/shared';
 import { ActionBar } from './ActionBar';
 import { NotePickerModal } from './NotePickerModal';
-import { listNotes, getNote, createNote, deleteNote } from '../api/notes-api';
+import { listNotes, getNote, createNote, updateNoteBody, deleteNote } from '../api/notes-api';
 import { useTheme } from '../hooks/useTheme';
 import styles from './NotePlatform.module.css';
+
+const draftNote = (): Note => ({
+  id: 'new',
+  title: '',
+  body: '# ',
+  createdAt: 0,
+  updatedAt: 0,
+});
 
 const NoteEditor = lazy(() =>
   import('./NoteEditor').then((m) => ({ default: m.NoteEditor })),
@@ -13,7 +21,12 @@ const NoteEditor = lazy(() =>
 
 export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   const { id } = useParams();
-  const selectedId = id ?? null;
+  const location = useLocation();
+  // /n/new is static — useParams() returns {} for it. Fall back to pathname.
+  const selectedId =
+    location.pathname === '/n/new'
+      ? 'new'
+      : id ?? null;
   const navigate = useNavigate();
   const onSelect = (id: string | null) => navigate(id ? `/n/${id}` : '/');
 
@@ -33,9 +46,11 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   }, [pickerOpen]);
 
   useEffect(() => {
-    if (selectedId) {
+    if (selectedId && selectedId !== 'new') {
       setCurrent(undefined);
       getNote(selectedId).then(setCurrent);
+    } else if (selectedId === 'new') {
+      setCurrent(draftNote());
     } else {
       setCurrent(null);
     }
@@ -57,14 +72,21 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  const handleNew = async () => {
-    const created = await createNote();
-    setNotes((prev) => [
-      { id: created.id, title: created.title, updatedAt: created.updatedAt },
-      ...prev,
-    ]);
-    onSelect(created.id);
+  const handleNew = () => {
+    navigate('/n/new');
   };
+
+  const handleSave = useCallback(
+    (saved: Note) => {
+      setCurrent(saved);
+      setNotes((prev) => [
+        { id: saved.id, title: saved.title, updatedAt: saved.updatedAt },
+        ...prev.filter((n) => n.id !== 'new'),
+      ]);
+      navigate(`/n/${saved.id}`);
+    },
+    [navigate],
+  );
 
   const handleDelete = async (id: string) => {
     await deleteNote(id);
@@ -92,7 +114,7 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
       )}
       {selectedId && current ? (
         <Suspense fallback={<p>Loading editor…</p>}>
-          <NoteEditor note={current} theme={theme} />
+          <NoteEditor note={current} theme={theme} onCreate={handleSave} />
         </Suspense>
       ) : (
         <p>

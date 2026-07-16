@@ -14,6 +14,10 @@ export const Routing = () => {
         {authed ? (
           <>
             <Route
+              path="/n/new"
+              element={<NotePlatform onLogout={handleLogout} />}
+            />
+            <Route
               path="/n/:id"
               element={<NotePlatform onLogout={handleLogout} />}
             />
