@@ -47,7 +47,6 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
 
   useEffect(() => {
     if (selectedId && selectedId !== 'new') {
-      setCurrent(undefined);
       getNote(selectedId).then(setCurrent);
     } else if (selectedId === 'new') {
       setCurrent(draftNote());
@@ -114,7 +113,7 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
       )}
       {selectedId && current ? (
         <Suspense fallback={<p>Loading editor…</p>}>
-          <NoteEditor note={current} theme={theme} onCreate={handleSave} />
+          <NoteEditor key={current.id} note={current} theme={theme} onCreate={handleSave} />
         </Suspense>
       ) : (
         <p>

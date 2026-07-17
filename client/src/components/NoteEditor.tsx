@@ -36,6 +36,10 @@ export const NoteEditor = ({
 
   useEffect(() => {
     editorRef.current?.focus();
+    if (isDraft) {
+      // Place cursor after the initial '# ' heading marker.
+      editorRef.current?.setCursor(note.body.length);
+    }
   }, []);
 
   const statusLabel =
