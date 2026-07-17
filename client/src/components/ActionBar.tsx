@@ -4,6 +4,7 @@ import {
   NewNote as NewNoteIcon,
   LightDark as LightDarkIcon,
   Logout as LogoutIcon,
+  Rows as RowsIcon,
 } from './icons/Icons';
 import styles from './ActionBar.module.css';
 
@@ -27,9 +28,13 @@ export const ActionBar = ({
       <NewNoteIcon />
     </button>
     <button type="button" aria-label="Notes" onClick={onOpenPicker}>
-      <AppsIcon />
+      <RowsIcon />
     </button>
-    <button type="button" aria-label={theme === 'light' ? 'Dark' : 'Light'} onClick={onToggleTheme}>
+    <button
+      type="button"
+      aria-label={theme === 'light' ? 'Dark' : 'Light'}
+      onClick={onToggleTheme}
+    >
       <LightDarkIcon />
     </button>
     <button type="button" aria-label="Log out" onClick={() => onLogout?.()}>
