@@ -3,9 +3,16 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { Note, NoteSummary } from '@notes/shared';
 import { ActionBar } from './ActionBar';
 import { NotePickerModal } from './NotePickerModal';
-import { listNotes, getNote, createNote, updateNoteBody, deleteNote } from '../api/notes-api';
+import {
+  listNotes,
+  getNote,
+  createNote,
+  updateNoteBody,
+  deleteNote,
+} from '../api/notes-api';
 import { useTheme } from '../hooks/useTheme';
 import styles from './NotePlatform.module.css';
+import { ServiceModal } from './ServiceModal';
 
 const draftNote = (): Note => ({
   id: 'new',
@@ -23,17 +30,15 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
   const { id } = useParams();
   const location = useLocation();
   // /n/new is static — useParams() returns {} for it. Fall back to pathname.
-  const selectedId =
-    location.pathname === '/n/new'
-      ? 'new'
-      : id ?? null;
+  const selectedId = location.pathname === '/n/new' ? 'new' : (id ?? null);
   const navigate = useNavigate();
   const onSelect = (id: string | null) => navigate(id ? `/n/${id}` : '/');
 
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const [notes, setNotes] = useState<NoteSummary[]>([]);
   const [current, setCurrent] = useState<Note | null | undefined>(undefined);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [serviceOpen, setServiceOpen] = useState(false);
 
   useEffect(() => {
     listNotes().then(setNotes);
@@ -98,22 +103,21 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
       <ActionBar
         onNew={handleNew}
         onOpenPicker={() => setPickerOpen(true)}
-        theme={theme}
-        onToggleTheme={toggleTheme}
+        onOpenService={() => setServiceOpen(true)}
         onLogout={onLogout}
       />
-      {pickerOpen && (
-        <NotePickerModal
-          notes={notes}
-          selectedId={selectedId}
-          onSelect={onSelect}
-          onClose={() => setPickerOpen(false)}
-          onDelete={handleDelete}
-        />
-      )}
+      <NotePickerModal
+        open={pickerOpen}
+        notes={notes}
+        selectedId={selectedId}
+        onSelect={onSelect}
+        onClose={() => setPickerOpen(false)}
+        onDelete={handleDelete}
+      />
+      <ServiceModal open={serviceOpen} onClose={() => setServiceOpen(false)} />
       {selectedId && current ? (
         <Suspense fallback={<p>Loading editor…</p>}>
-          <NoteEditor key={current.id} note={current} theme={theme} onCreate={handleSave} />
+          <NoteEditor key={current.id} note={current} onCreate={handleSave} />
         </Suspense>
       ) : (
         <p>

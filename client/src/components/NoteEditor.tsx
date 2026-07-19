@@ -9,6 +9,7 @@ import type { Note } from '@notes/shared';
 import { updateNoteBody, createNote } from '../api/notes-api';
 import { PALETTE } from '../theme';
 import styles from './NoteEditor.module.css';
+import { useTheme } from '../hooks/useTheme';
 
 const STATUS_LABEL: Record<SaveStatus, string> = {
   idle: '',
@@ -17,15 +18,14 @@ const STATUS_LABEL: Record<SaveStatus, string> = {
   error: "Couldn't save — retrying",
 };
 
-const formatTime = (date: Date) => date.toLocaleTimeString('en-GB', { hour12: false });
+const formatTime = (date: Date) =>
+  date.toLocaleTimeString('en-GB', { hour12: false });
 
 export const NoteEditor = ({
   note,
-  theme,
   onCreate,
 }: {
   note: Note;
-  theme: Theme;
   /** Called once when the draft is persisted to the server. */
   onCreate?: (note: Note) => void;
 }) => {
@@ -33,6 +33,7 @@ export const NoteEditor = ({
   const [isDraft, setIsDraft] = useState(note.id === 'new');
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     editorRef.current?.focus();
@@ -43,7 +44,9 @@ export const NoteEditor = ({
   }, []);
 
   const statusLabel =
-    status === 'saved' && savedAt ? `Saved on ${formatTime(savedAt)}` : STATUS_LABEL[status];
+    status === 'saved' && savedAt
+      ? `Saved on ${formatTime(savedAt)}`
+      : STATUS_LABEL[status];
 
   const handleSave = (body: string) => {
     if (isDraft) {
@@ -69,7 +72,7 @@ export const NoteEditor = ({
           setStatus(s);
           if (s === 'saved') setSavedAt(new Date());
         }}
-        theme={theme}
+        theme={theme as Theme}
         bg={PALETTE}
       />
     </div>

@@ -1,8 +1,6 @@
-import type { Theme } from 'md-live-editor/react';
 import {
   Apps as AppsIcon,
   NewNote as NewNoteIcon,
-  LightDark as LightDarkIcon,
   Logout as LogoutIcon,
   Rows as RowsIcon,
 } from './icons/Icons';
@@ -11,16 +9,14 @@ import styles from './ActionBar.module.css';
 export interface ActionBarProps {
   onNew: () => void;
   onOpenPicker: () => void;
-  theme: Theme;
-  onToggleTheme: () => void;
+  onOpenService: () => void;
   onLogout?: () => void;
 }
 
 export const ActionBar = ({
   onNew,
   onOpenPicker,
-  theme,
-  onToggleTheme,
+  onOpenService,
   onLogout,
 }: ActionBarProps) => (
   <div className={styles.actionBar} role="toolbar" aria-label="Actions">
@@ -30,12 +26,8 @@ export const ActionBar = ({
     <button type="button" aria-label="Notes" onClick={onOpenPicker}>
       <RowsIcon />
     </button>
-    <button
-      type="button"
-      aria-label={theme === 'light' ? 'Dark' : 'Light'}
-      onClick={onToggleTheme}
-    >
-      <LightDarkIcon />
+    <button type="button" aria-label="Services" onClick={onOpenService}>
+      <AppsIcon />
     </button>
     <button type="button" aria-label="Log out" onClick={() => onLogout?.()}>
       <LogoutIcon />

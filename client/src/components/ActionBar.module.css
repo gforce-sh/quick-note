@@ -67,17 +67,11 @@
 
   .actionBar button:first-child {
     border-left: none;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
+    border-radius: 0;
   }
 
   .actionBar button:last-child {
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
+    border-radius: 0;
   }
 }
 

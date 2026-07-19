@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Command } from 'cmdk';
 import type { NoteSummary } from '@notes/shared';
 import styles from './NotePickerModal.module.css';
+import { Popover } from './common/popover/Popover';
 
+// prettier-ignore
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 export function formatNoteDate(ts: number): string {
@@ -21,6 +23,7 @@ export interface NotePickerModalProps {
   onSelect: (id: string) => void;
   onClose: () => void;
   onDelete: (id: string) => void;
+  open: boolean;
 }
 
 export const NotePickerModal = ({
@@ -29,6 +32,7 @@ export const NotePickerModal = ({
   onSelect,
   onClose,
   onDelete,
+  open,
 }: NotePickerModalProps) => {
   const [armedId, setArmedId] = useState<string | null>(null);
 
@@ -47,39 +51,38 @@ export const NotePickerModal = ({
     }
   };
 
+  useEffect(() => {
+    if (!open) {
+      setArmedId(null);
+    }
+  }, [open]);
+
   return (
-    <div className={styles.backdrop} onClick={onClose}>
-      <div
-        className={styles.panel}
-        role="dialog"
-        aria-label="Select note"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Command onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
-          <Command.Input placeholder="Search notes…" autoFocus />
-          <Command.List>
-            <Command.Empty>No notes found.</Command.Empty>
-            {notes.map((note) => (
-              <Command.Item
-                key={note.id}
-                value={note.title}
-                onSelect={() => handleSelect(note.id)}
-                data-current={selectedId === note.id || undefined}
-              >
-                <span className={styles.title}>{note.title}</span>
-                <span className={styles.date}>{formatNoteDate(note.updatedAt)}</span>
-                <button
-                  type="button"
-                  aria-label={`Delete ${note.title}`}
-                  onClick={(e) => handleDelete(e, note.id)}
-                >
-                  {armedId === note.id ? 'Confirm?' : 'Delete'}
-                </button>
-              </Command.Item>
-            ))}
-          </Command.List>
-        </Command>
-      </div>
-    </div>
+    <Popover onClose={onClose} open={open}>
+      <Command.Input placeholder="Search notes…" autoFocus />
+      <Command.List>
+        <Command.Empty>No notes found.</Command.Empty>
+        {notes.map((note) => (
+          <Command.Item
+            key={note.id}
+            value={note.title}
+            onSelect={() => handleSelect(note.id)}
+            data-current={selectedId === note.id || undefined}
+          >
+            <span className={styles.title}>{note.title}</span>
+            <span className={styles.date}>
+              {formatNoteDate(note.updatedAt)}
+            </span>
+            <button
+              type="button"
+              aria-label={`Delete ${note.title}`}
+              onClick={(e) => handleDelete(e, note.id)}
+            >
+              {armedId === note.id ? 'Confirm?' : 'Delete'}
+            </button>
+          </Command.Item>
+        ))}
+      </Command.List>
+    </Popover>
   );
 };
