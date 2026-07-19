@@ -5,6 +5,8 @@ import { useTheme } from '../hooks/useTheme';
 import {
   LightDark as LightDarkIcon,
   Upload as UploadIcon,
+  NewUser as NewUserIcon,
+  Tags as TagsIcon,
 } from './common/icons/Icons';
 
 export const ServiceModal = ({
@@ -26,6 +28,16 @@ export const ServiceModal = ({
         <Command.Item aria-label="Backup" onSelect={() => {}}>
           <div className={styles.iconWrapper}>
             <UploadIcon size={36} />
+          </div>
+        </Command.Item>
+        <Command.Item aria-label="New user" onSelect={() => {}}>
+          <div className={styles.iconWrapper}>
+            <NewUserIcon size={36} />
+          </div>
+        </Command.Item>
+        <Command.Item aria-label="Tags" onSelect={() => {}}>
+          <div className={styles.iconWrapper}>
+            <TagsIcon size={36} />
           </div>
         </Command.Item>
       </Command.Group>
