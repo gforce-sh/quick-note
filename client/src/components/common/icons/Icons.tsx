@@ -42,3 +42,5 @@ export const Upload = ({size = 24}: {size?: number}) => (
         <path d="M15.5801 18.2L18.7801 15L21.98 18.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
 )
+
+export const 

@@ -5,7 +5,7 @@ import { useTheme } from '../hooks/useTheme';
 import {
   LightDark as LightDarkIcon,
   Upload as UploadIcon,
-} from './icons/Icons';
+} from './common/icons/Icons';
 
 export const ServiceModal = ({
   open,
