@@ -3,7 +3,7 @@ import {
   NewNote as NewNoteIcon,
   Logout as LogoutIcon,
   Rows as RowsIcon,
-} from './common/icons/Icons';
+} from '../common/icons/Icons';
 import styles from './ActionBar.module.css';
 
 export interface ActionBarProps {

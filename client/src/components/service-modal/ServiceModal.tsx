@@ -1,13 +1,13 @@
-import { Popover } from './common/popover/Popover';
+import { Popover } from '../common/popover/Popover';
 import { Command } from 'cmdk';
 import styles from './ServiceModal.module.css';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../../hooks/useTheme';
 import {
   LightDark as LightDarkIcon,
   Upload as UploadIcon,
   NewUser as NewUserIcon,
   Tags as TagsIcon,
-} from './common/icons/Icons';
+} from '../common/icons/Icons';
 
 export const ServiceModal = ({
   open,

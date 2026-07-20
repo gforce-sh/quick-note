@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Command } from 'cmdk';
 import type { NoteSummary } from '@notes/shared';
 import styles from './NotePickerModal.module.css';
-import { Popover } from './common/popover/Popover';
+import { Popover } from '../common/popover/Popover';
 
 // prettier-ignore
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];

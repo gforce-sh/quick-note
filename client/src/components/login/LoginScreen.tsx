@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import type { LoginResult } from '../api/auth-api';
-import { useTheme } from '../hooks/useTheme';
+import type { LoginResult } from '../../api/auth-api';
+import { useTheme } from '../../hooks/useTheme';
 import styles from './LoginScreen.module.css';
 
 export interface LoginScreenProps {

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { LoginScreen } from "../src/components/LoginScreen";
+import { LoginScreen } from "./LoginScreen";
 
 async function typeCode(code: string) {
   const user = userEvent.setup();

@@ -50,7 +50,7 @@ export const Tags = ({size = 24}: {size?: number}) => (
 )
 
 export const NewUser = ({size = 24}: {size?: number}) => (
-    <svg fill="currentColor" height={size} width={size} version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 612 612" xml:space="preserve">
+    <svg fill="currentColor" height={size} width={size} version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 612 612" xmlSpace="preserve">
         <g>
 	        <g>
 		        <path d="M269.272,310.198c86.177-0.005,117.184-86.291,125.301-157.169C404.572,65.715,363.282,0,269.272,0C175.274,0,133.963,65.71,143.97,153.029C152.095,223.907,183.093,310.204,269.272,310.198z"/>

@@ -2,12 +2,12 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import type { Note } from "@notes/shared";
-import * as notesApi from "../src/api/notes-api";
-import { NotePlatform } from "../src/components/NotePlatform";
+import * as notesApi from "../../api/notes-api";
+import { NotePlatform } from "./NotePlatform";
 
-vi.mock("../src/api/notes-api");
+vi.mock("../../api/notes-api");
 
-function note(id: string, title: string, body = ""): Note {
+function note(id: string, title: string, body: string = ""): Note {
   return { id, title, body, createdAt: 0, updatedAt: 1 };
 }
 
@@ -19,15 +19,15 @@ function mockNotesApi(initial: Note[] = []) {
     notes.map((n) => ({ id: n.id, title: n.title, updatedAt: n.updatedAt })),
   );
   vi.mocked(notesApi.getNote).mockImplementation(
-    async (id) => notes.find((n) => n.id === id) ?? null,
+    async (id: string) => notes.find((n) => n.id === id) ?? null,
   );
-  vi.mocked(notesApi.createNote).mockImplementation(async ({ body }) => {
+  vi.mocked(notesApi.createNote).mockImplementation(async ({ body }: { body: string }) => {
     const title = body.startsWith("# ") ? "New note 2026-06-06 00:00" : body.split("\n")[0];
     const created = note("new-1", title ?? "New note 2026-06-06 00:00", body);
     notes = [created, ...notes];
     return created;
   });
-  vi.mocked(notesApi.deleteNote).mockImplementation(async (id) => {
+  vi.mocked(notesApi.deleteNote).mockImplementation(async (id: string) => {
     notes = notes.filter((n) => n.id !== id);
   });
 }

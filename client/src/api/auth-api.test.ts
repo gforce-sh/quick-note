@@ -1,4 +1,4 @@
-import { login, logout } from "../src/api/auth-api";
+import { login, logout } from "../api/auth-api";
 
 function mockFetch(status: number, body: unknown = {}) {
   return vi.fn().mockResolvedValue(

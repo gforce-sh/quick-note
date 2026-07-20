@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { NotePickerModal, formatNoteDate } from "../src/components/NotePickerModal";
+import { NotePickerModal, formatNoteDate } from "./NotePickerModal";
 import type { NoteSummary } from "@notes/shared";
 
 const notes: NoteSummary[] = [
@@ -15,6 +15,7 @@ function renderModal(overrides: Record<string, unknown> = {}) {
     onSelect: vi.fn(),
     onClose: vi.fn(),
     onDelete: vi.fn(),
+    open: true,
     ...overrides,
   };
   render(<NotePickerModal {...props} />);

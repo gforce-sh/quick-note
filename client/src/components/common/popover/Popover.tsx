@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Command } from 'cmdk';
 import styles from './Popover.module.css';
 import clsx from 'clsx';
@@ -15,6 +16,8 @@ export const Popover = ({
   children,
   className,
 }: CmdKProps) => {
+  const panelRef = useRef<HTMLDivElement>(null);
+
   if (!open) return null;
   return (
     <div
@@ -22,6 +25,7 @@ export const Popover = ({
       onClick={() => onClose?.()}
     >
       <div
+        ref={panelRef}
         className={styles.panel}
         role="dialog"
         aria-label="Select note"

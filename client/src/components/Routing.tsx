@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { NotePlatform } from './NotePlatform';
+import { NotePlatform } from './note-platform/NotePlatform';
 import { useAuth } from '../hooks/useAuth';
-import { LoginScreen } from './LoginScreen';
+import { LoginScreen } from './login/LoginScreen';
 
 export const Routing = () => {
   const { handleLogin, handleLogout, authed } = useAuth();

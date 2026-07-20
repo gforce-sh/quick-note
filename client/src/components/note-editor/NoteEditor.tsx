@@ -6,10 +6,10 @@ import {
   type Theme,
 } from 'md-live-editor/react';
 import type { Note } from '@notes/shared';
-import { updateNoteBody, createNote } from '../api/notes-api';
-import { PALETTE } from '../theme';
+import { updateNoteBody, createNote } from '../../api/notes-api';
+import { PALETTE } from '../../theme';
 import styles from './NoteEditor.module.css';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../../hooks/useTheme';
 
 const STATUS_LABEL: Record<SaveStatus, string> = {
   idle: '',
@@ -67,7 +67,7 @@ export const NoteEditor = ({
       <MarkdownEditor
         ref={editorRef}
         initialContent={note.body}
-        onSave={(content) => handleSave(content).then(() => {})}
+        onSave={(content) => handleSave(content).then(() => { })}
         onSaveStatus={(s) => {
           setStatus(s);
           if (s === 'saved') setSavedAt(new Date());

@@ -1,18 +1,18 @@
 import { useState, useEffect, lazy, Suspense, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import type { Note, NoteSummary } from '@notes/shared';
-import { ActionBar } from './ActionBar';
-import { NotePickerModal } from './NotePickerModal';
+import { ActionBar } from '../action-bar/ActionBar';
+import { NotePickerModal } from '../note-picker/NotePickerModal';
+import { ServiceModal } from '../service-modal/ServiceModal';
 import {
   listNotes,
   getNote,
   createNote,
   updateNoteBody,
   deleteNote,
-} from '../api/notes-api';
-import { useTheme } from '../hooks/useTheme';
+} from '../../api/notes-api';
+import { useTheme } from '../../hooks/useTheme';
 import styles from './NotePlatform.module.css';
-import { ServiceModal } from './ServiceModal';
 
 const draftNote = (): Note => ({
   id: 'new',
@@ -23,7 +23,7 @@ const draftNote = (): Note => ({
 });
 
 const NoteEditor = lazy(() =>
-  import('./NoteEditor').then((m) => ({ default: m.NoteEditor })),
+  import('../note-editor/NoteEditor').then((m) => ({ default: m.NoteEditor })),
 );
 
 export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
