@@ -13,6 +13,7 @@ import {
 } from '../../api/notes-api';
 import { useTheme } from '../../hooks/useTheme';
 import styles from './NotePlatform.module.css';
+import { TemplateIcon } from '../common/icons/Icons';
 
 const draftNote = (): Note => ({
   id: 'new',
@@ -120,11 +121,11 @@ export const NotePlatform = ({ onLogout }: { onLogout?: () => void }) => {
           <NoteEditor key={current.id} note={current} onCreate={handleSave} />
         </Suspense>
       ) : (
-        <p>
-          {notes.length === 0
-            ? 'No notes yet. Create your first note.'
-            : 'Select a note.'}
-        </p>
+        <div className={styles.templateWrapper}>
+          <div className={styles.iconContainer}>
+            <TemplateIcon />
+          </div>
+        </div>
       )}
     </div>
   );

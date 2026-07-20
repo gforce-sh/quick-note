@@ -6,7 +6,6 @@
 }
 
 .app p {
-  flex: 1;
   align-self: center;
   text-align: center;
 }
@@ -28,4 +27,16 @@
 .app[data-theme='dark'] {
   background: var(--qn-bg-dark);
   color: #e4e4e4;
+}
+
+.templateWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.iconContainer {
+  width: 25rem;
+  opacity: 0.2;
 }
