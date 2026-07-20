@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LoginScreen } from "./LoginScreen";
+import { ThemeProvider } from "../../context/theme";
 
 async function typeCode(code: string) {
   const user = userEvent.setup();
@@ -15,9 +16,11 @@ async function typeCode(code: string) {
 describe("LoginScreen", () => {
   it("shows four passcode inputs", () => {
     render(
-      <LoginScreen
-        onSubmit={vi.fn().mockResolvedValue({ ok: true })}
-      />,
+      <ThemeProvider>
+        <LoginScreen
+          onSubmit={vi.fn().mockResolvedValue({ ok: true })}
+        />
+      </ThemeProvider>,
     );
 
     expect(
@@ -27,7 +30,7 @@ describe("LoginScreen", () => {
 
   it("submits the four digits", async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ok: true });
-    render(<LoginScreen onSubmit={onSubmit} />);
+    render(<ThemeProvider><LoginScreen onSubmit={onSubmit} /></ThemeProvider>);
 
     await typeCode("1234");
 
@@ -36,7 +39,7 @@ describe("LoginScreen", () => {
 
   it("shows an error on an incorrect passcode", async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ok: false, reason: "invalid" });
-    render(<LoginScreen onSubmit={onSubmit} />);
+    render(<ThemeProvider><LoginScreen onSubmit={onSubmit} /></ThemeProvider>);
 
     await typeCode("0000");
 
@@ -46,7 +49,7 @@ describe("LoginScreen", () => {
 
   it("shows a lockout message after too many attempts", async () => {
     const onSubmit = vi.fn().mockResolvedValue({ ok: false, reason: "locked" });
-    render(<LoginScreen onSubmit={onSubmit} />);
+    render(<ThemeProvider><LoginScreen onSubmit={onSubmit} /></ThemeProvider>);
 
     await typeCode("0000");
 

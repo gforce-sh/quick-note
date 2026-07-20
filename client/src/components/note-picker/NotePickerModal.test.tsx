@@ -75,4 +75,58 @@ describe("NotePickerModal", () => {
     const ts = new Date(2026, 5, 21, 19, 20, 0).getTime();
     expect(formatNoteDate(ts)).toBe("21 Jun 26 19:20");
   });
+
+  it("renders nothing when open is false", () => {
+    renderModal({ open: false });
+
+    expect(screen.queryByText("First")).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("resets armed delete state when closed", async () => {
+    const user = userEvent.setup();
+
+    const { rerender } = render(
+      <NotePickerModal
+        notes={notes}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onClose={vi.fn()}
+        onDelete={vi.fn()}
+        open={true}
+      />
+    );
+
+    // First click: goes to "Confirm?" (armed)
+    const del = screen.getByRole("button", { name: "Delete First" });
+    await user.click(del);
+    expect(del.textContent).toBe("Confirm?");
+
+    // Close (open=false) — useEffect resets armedId to null
+    rerender(
+      <NotePickerModal
+        notes={notes}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onClose={vi.fn()}
+        onDelete={vi.fn()}
+        open={false}
+      />
+    );
+
+    // Re-open: armedId was reset by the useEffect when open went false
+    rerender(
+      <NotePickerModal
+        notes={notes}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onClose={vi.fn()}
+        onDelete={vi.fn()}
+        open={true}
+      />
+    );
+
+    const updatedDel = screen.getByRole("button", { name: "Delete First" });
+    expect(updatedDel.textContent).toBe("Delete");
+  });
 });

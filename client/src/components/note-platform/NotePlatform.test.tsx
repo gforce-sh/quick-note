@@ -4,6 +4,7 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import type { Note } from "@notes/shared";
 import * as notesApi from "../../api/notes-api";
 import { NotePlatform } from "./NotePlatform";
+import { ThemeProvider } from "../../context/theme";
 
 vi.mock("../../api/notes-api");
 
@@ -34,13 +35,15 @@ function mockNotesApi(initial: Note[] = []) {
 
 function renderPlatform(initialEntry = "/") {
   return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route path="/n/new" element={<NotePlatform />} />
-        <Route path="/n/:id" element={<NotePlatform />} />
-        <Route path="*" element={<NotePlatform />} />
-      </Routes>
-    </MemoryRouter>,
+    <ThemeProvider>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Routes>
+          <Route path="/n/new" element={<NotePlatform />} />
+          <Route path="/n/:id" element={<NotePlatform />} />
+          <Route path="*" element={<NotePlatform />} />
+        </Routes>
+      </MemoryRouter>
+    </ThemeProvider>,
   );
 }
 

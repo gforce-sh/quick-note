@@ -29,4 +29,13 @@ describe("ActionBar", () => {
 
     expect(onLogout).toHaveBeenCalled();
   });
+
+  it("triggers services button", async () => {
+    const onOpenService = vi.fn();
+    render(<ActionBar onNew={vi.fn()} onOpenPicker={vi.fn()} onOpenService={onOpenService} />);
+
+    await userEvent.setup().click(screen.getByRole("button", { name: "Services" }));
+
+    expect(onOpenService).toHaveBeenCalled();
+  });
 });
