@@ -19,8 +19,12 @@
   overflow-y: auto;
   max-height: 50vh;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   animation: picker-in 0.12s ease;
+}
+
+.panel::-webkit-scrollbar {
+  display: none;
 }
 
 @keyframes backdrop-in {

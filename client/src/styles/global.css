@@ -37,3 +37,11 @@ body {
   container-type: inline-size;
   container-name: root-node;
 }
+
+/* Hide scrollbars in cmdk-rendered elements (NotePickerModal, ServiceModal). */
+[cmdk-list]::-webkit-scrollbar {
+  display: none;
+}
+[cmdk-list] {
+  scrollbar-width: none;
+}
