@@ -41,6 +41,13 @@ export const NoteEditor = ({
       // Place cursor after the initial '# ' heading marker.
       editorRef.current?.setCursor(note.body.length);
     }
+
+    return () => {
+      if (!isDraft) {
+        // Save the note when the editor is unmounted.
+        editorRef.current?.flushSave();
+      }
+    };
   }, []);
 
   const statusLabel =
@@ -49,6 +56,7 @@ export const NoteEditor = ({
       : STATUS_LABEL[status];
 
   const handleSave = (body: string) => {
+    console.log('in handleSave', ' isDraft', isDraft);
     if (isDraft) {
       return createNote({ body }).then((saved) => {
         setIsDraft(false);
@@ -59,6 +67,11 @@ export const NoteEditor = ({
     return updateNoteBody(note.id, body).then(() => note);
   };
 
+  const handleSaveStatus = (s: SaveStatus) => {
+    setStatus(s);
+    if (s === 'saved') setSavedAt(new Date());
+  };
+
   return (
     <div className={styles.editor}>
       <div className={styles.status} role="status" aria-live="polite">
@@ -67,11 +80,8 @@ export const NoteEditor = ({
       <MarkdownEditor
         ref={editorRef}
         initialContent={note.body}
-        onSave={(content) => handleSave(content).then(() => { })}
-        onSaveStatus={(s) => {
-          setStatus(s);
-          if (s === 'saved') setSavedAt(new Date());
-        }}
+        onSave={(content) => handleSave(content).then(() => {})}
+        onSaveStatus={handleSaveStatus}
         theme={theme as Theme}
         bg={PALETTE}
       />

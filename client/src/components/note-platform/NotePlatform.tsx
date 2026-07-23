@@ -4,13 +4,7 @@ import type { Note, NoteSummary } from '@notes/shared';
 import { ActionBar } from '../action-bar/ActionBar';
 import { NotePickerModal } from '../note-picker/NotePickerModal';
 import { ServiceModal } from '../service-modal/ServiceModal';
-import {
-  listNotes,
-  getNote,
-  createNote,
-  updateNoteBody,
-  deleteNote,
-} from '../../api/notes-api';
+import { listNotes, getNote, deleteNote } from '../../api/notes-api';
 import { useTheme } from '../../hooks/useTheme';
 import styles from './NotePlatform.module.css';
 import { TemplateIcon } from '../common/icons/Icons';
